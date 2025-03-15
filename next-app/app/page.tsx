@@ -1,14 +1,56 @@
+"use client"
+
 import Link from "next/link"
 import { ArrowRight, Database, Globe, Rocket } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
+import { RotatingPlanet } from "@/components/rotating-planet"
+import { ImageCarousel } from "@/components/image-carousel"
+import { MobileMenu } from "@/components/mobile-menu"
+import { SpaceBackground } from "@/components/space-background"
+import { ParticleBackground } from "@/components/particle-background"
 
 export default function Home() {
+  // Navigation links
+  const navLinks = [
+    { href: "#features", label: "Features" },
+    { href: "#about", label: "About" },
+    { href: "#methodology", label: "Methodology" },
+  ]
+
+  // Sample images for the carousel
+  const exoplanetImages = [
+    {
+      src: "https://wallup.net/wp-content/uploads/2016/01/52703-galaxy-space-stars.jpg",
+      alt: "Galaxy and stars",
+      caption: "A beautiful view of the galaxy",
+    },
+    {
+      src: "https://rare-gallery.com/mocahbig/86172-earth-space-digital-universe-hd-4k.jpg",
+      alt: "Earth from space",
+      caption: "Earth as seen from outer space",
+    },
+    {
+      src: "https://i.pinimg.com/originals/72/cb/e3/72cbe31328dc80466f83d72d15e299fc.jpg",
+      alt: "Mars landscape",
+      caption: "A stunning view of the Mars-like landscape",
+    },
+    {
+      src: "https://wallup.net/wp-content/uploads/2015/12/211091-stars-night-landscape-starry_night-mountain-long_exposure-galaxy-shooting_stars-comet.jpg",
+      alt: "Night sky with stars",
+      caption: "The vast and endless night sky filled with stars",
+    },
+  ]
+
   return (
     <div className="flex min-h-screen flex-col bg-[#030014]">
+      {/* Particle Background */}
+      <ParticleBackground />
+
+      {/* Space Background */}
+      <SpaceBackground />
+
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-        <div className="container flex h-16 items-center justify-between">
+        <div className="container flex h-16 items-center justify-between p-8">
           <div className="flex items-center gap-2">
             <div className="relative">
               <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur"></div>
@@ -20,20 +62,26 @@ export default function Home() {
               ExoHabit
             </span>
           </div>
-          <nav className="hidden md:flex items-center gap-8">
-            <Link href="#features" className="text-sm font-medium text-white/70 transition-colors hover:text-white">
-              Features
-            </Link>
-            <Link href="#about" className="text-sm font-medium text-white/70 transition-colors hover:text-white">
-              About
-            </Link>
-            <Link href="#methodology" className="text-sm font-medium text-white/70 transition-colors hover:text-white">
-              Methodology
-            </Link>
+
+          {/* Mobile menu */}
+          <MobileMenu links={navLinks} />
+
+          {/* Desktop navigation */}
+          <nav className="hidden md:flex items-center gap-6 lg:gap-8">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium text-white transition-colors hover:text-indigo-300"
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
-          <div className="flex items-center gap-4">
+
+          <div className="hidden md:flex items-center gap-4">
             <Link href="/signin">
-              <Button variant="ghost" size="sm" className="text-white/70 hover:bg-white/10 hover:text-white">
+              <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
                 Sign In
               </Button>
             </Link>
@@ -48,6 +96,7 @@ export default function Home() {
           </div>
         </div>
       </header>
+
       <main className="flex-1">
         <section className="relative w-full overflow-hidden py-12 md:py-24 lg:py-32 xl:py-48">
           <div className="absolute inset-0 bg-[url('/placeholder.svg?height=1080&width=1920')] bg-cover bg-center bg-no-repeat opacity-30"></div>
@@ -55,6 +104,10 @@ export default function Home() {
           <div className="absolute inset-0">
             <div className="h-full w-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent"></div>
           </div>
+
+          {/* Add rotating planet */}
+          <RotatingPlanet size={1200} position="right" />
+
           <div className="container relative px-4 md:px-6">
             <div className="flex flex-col items-center space-y-8 text-center">
               <div className="space-y-4">
@@ -62,7 +115,8 @@ export default function Home() {
                   Discover Habitable Exoplanets
                 </h1>
                 <p className="mx-auto max-w-[700px] text-white/70 md:text-xl">
-                  Using AI and Machine Learning to analyze NASA&apos;s Exoplanet Archive data and predict habitability and terraformability scores.
+                  Using AI and Machine Learning to analyze NASA&apos;s Exoplanet Archive data and predict habitability and
+                  terraformability scores.
                 </p>
 
               </div>
@@ -80,7 +134,7 @@ export default function Home() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="rounded-full border-white/20 text-white hover:bg-white/10"
+                    className="relative overflow-hidden rounded-full bg-gradient-to-r from-gray-600 to-gray-800 text-white shadow-lg transition-all duration-300 hover:shadow-gray-500/25"
                   >
                     Learn More
                   </Button>
@@ -169,30 +223,20 @@ export default function Home() {
                 </div>
                 <div className="space-y-4">
                   <p className="max-w-[600px] text-white/60 md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed">
-                    We take real data from NASA&apos;s Exoplanet Archive, apply both rule-based and ML-based methods, and provide an AI-generated habitability score for each exoplanet.
+                    We take real data from NASA&apos;s Exoplanet Archive, apply both rule-based and ML-based methods, and
+                    provide an AI-generated habitability score for each exoplanet.
                   </p>
 
                   <p className="max-w-[600px] text-white/60 md:text-lg/relaxed lg:text-base/relaxed xl:text-lg/relaxed">
-                    Our new Terraformability Score assesses whether a planet can be engineered to support life even if it&apos;s not naturally habitable, providing valuable insights for ISRO and NASA.
+                    Our new Terraformability Score assesses whether a planet can be engineered to support life even if
+                    it&apos;s not naturally habitable, providing valuable insights for ISRO and NASA.
                   </p>
 
                 </div>
               </div>
               <div className="relative flex items-center justify-center">
-                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-900/30 to-transparent rounded-3xl blur-[2px]"></div>
-                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/50 p-2 shadow-2xl">
-                  <Image
-                    alt="Exoplanet visualization"
-                    className="rounded-xl object-cover"
-                    height="400"
-                    src="/placeholder.svg?height=400&width=600"
-                    style={{
-                      aspectRatio: "600/400",
-                      objectFit: "cover",
-                    }}
-                    width="600"
-                  />
-                </div>
+                {/* Replace static image with carousel */}
+                <ImageCarousel images={exoplanetImages} interval={3000} className="w-full max-w-[600px] mx-auto" />
               </div>
             </div>
           </div>
@@ -271,8 +315,8 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <footer className="w-full border-t border-white/10 bg-[#030014] py-6 md:py-0">
-        <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+      <footer className="w-full border-t border-white/10 bg-[#030014] py-4">
+        <div className="container mx-auto flex flex-col items-center justify-between gap-4 md:h-20 md:flex-row px-6">
           <div className="flex items-center gap-2">
             <div className="relative">
               <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur"></div>
@@ -287,7 +331,7 @@ export default function Home() {
           <p className="text-center text-sm leading-loose text-white/40 md:text-left">
             © 2025 ExoHabit. All rights reserved.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <Link href="#" className="text-sm font-medium text-white/40 hover:text-white/70">
               Terms
             </Link>
@@ -300,6 +344,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
     </div>
   )
 }

@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 import {
     BarChart3,
     Bell,
     ChevronRight,
     Globe,
-    LogOut,
     Menu,
     Moon,
     Search,
@@ -22,7 +22,6 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -33,9 +32,13 @@ import { SpaceBackground } from "@/components/space-background"
 import { PlanetCard } from "@/components/planet-card"
 import { GlowingButton } from "@/components/glowing-button"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { useTheme } from "@/components/theme-provider"
+import { useToast } from "@/hooks/use-toast"
 
 export default function Dashboard() {
-    const [theme, setTheme] = useState<"light" | "dark">("dark")
+    const { data: session } = useSession()
+    const { theme, setTheme, animations, particleEffects, blurEffects } = useTheme()
+    const { toast } = useToast()
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [progress, setProgress] = useState(13)
     const [isLoading, setIsLoading] = useState(true)
@@ -45,13 +48,16 @@ export default function Dashboard() {
     const containerRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
-        // Set dark theme by default
-        document.documentElement.classList.add("dark")
-
         // Simulate progress loading
         const timer = setTimeout(() => setProgress(66), 500)
         const timer2 = setTimeout(() => setProgress(100), 1000)
-        const loadingTimer = setTimeout(() => setIsLoading(false), 1500)
+        const loadingTimer = setTimeout(() => {
+            setIsLoading(false)
+            toast({
+                title: "Welcome back!",
+                description: "Your dashboard is ready to explore.",
+            })
+        }, 1500)
 
         const handleMouseMove = (e: MouseEvent) => {
             if (containerRef.current) {
@@ -71,12 +77,10 @@ export default function Dashboard() {
             clearTimeout(loadingTimer)
             window.removeEventListener("mousemove", handleMouseMove)
         }
-    }, [])
+    }, [toast])
 
     const toggleTheme = () => {
-        const newTheme = theme === "light" ? "dark" : "light"
-        setTheme(newTheme)
-        document.documentElement.classList.toggle("dark")
+        setTheme(theme === "light" ? "dark" : "light")
     }
 
     const handleTabChange = (value: string) => {
@@ -103,29 +107,30 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-
         )
     }
 
     return (
         <div className={theme === "dark" ? "dark" : ""} ref={containerRef}>
             <div className="relative flex min-h-screen flex-col bg-[#030014] dark:bg-[#030014] text-white overflow-hidden">
-                <ParticleBackground />
-                <SpaceBackground />
+                {particleEffects && <ParticleBackground />}
+                {particleEffects && <SpaceBackground />}
 
-                <div
-                    className="pointer-events-none absolute inset-0 z-30 opacity-70"
-                    style={{
-                        background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.15), transparent 25%)`,
-                    }}
-                />
+                {animations && (
+                    <div
+                        className="pointer-events-none absolute inset-0 z-30 opacity-70"
+                        style={{
+                            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.15), transparent 25%)`,
+                        }}
+                    />
+                )}
 
                 <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
                     <motion.div
                         initial={{ y: -20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="container flex h-16 items-center justify-between"
+                        transition={{ duration: animations ? 0.5 : 0 }}
+                        className="container flex h-16 items-center justify-between p-8"
                     >
                         <div className="flex items-center gap-2 md:gap-4">
                             <Sheet>
@@ -135,7 +140,10 @@ export default function Dashboard() {
                                         <span className="sr-only">Toggle menu</span>
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent side="left" className="border-r border-white/10 bg-black/80 backdrop-blur-xl">
+                                <SheetContent
+                                    side="left"
+                                    className={`border-r border-white/10 bg-black/80 ${blurEffects ? "backdrop-blur-xl" : ""}`}
+                                >
                                     <nav className="grid gap-6 text-lg font-medium">
                                         <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold">
                                             <div className="relative">
@@ -279,24 +287,26 @@ export default function Dashboard() {
                                         className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
                                     >
                                         <Avatar className="h-8 w-8">
-                                            <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
                                             <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                JD
+                                                {session?.user?.name?.charAt(0) || "U"}
                                             </AvatarFallback>
                                         </Avatar>
                                     </Button>
                                 </HoverCardTrigger>
-                                <HoverCardContent className="w-80 border-white/10 bg-black/80 backdrop-blur-xl text-white">
+                                <HoverCardContent
+                                    className={`w-80 border-white/10 bg-black/80 text-white ${blurEffects ? "backdrop-blur-xl" : ""}`}
+                                >
                                     <div className="flex justify-between space-x-4">
                                         <Avatar className="h-12 w-12">
-                                            <AvatarImage src="/placeholder.svg?height=48&width=48" />
+                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=48&width=48"} />
                                             <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                JD
+                                                {session?.user?.name?.charAt(0) || "U"}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="space-y-1 flex-1">
-                                            <h4 className="text-sm font-semibold">John Doe</h4>
-                                            <p className="text-xs text-white/60">Exoplanet Researcher</p>
+                                            <h4 className="text-sm font-semibold">{session?.user?.name || "John Doe"}</h4>
+                                            <p className="text-xs text-white/60">{session?.user?.email || "Exoplanet Researcher"}</p>
                                             <div className="flex items-center pt-2">
                                                 <Link
                                                     href="/dashboard/profile"
@@ -309,40 +319,6 @@ export default function Dashboard() {
                                     </div>
                                 </HoverCardContent>
                             </HoverCard>
-
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild className="hidden">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10"
-                                    >
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
-                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                JD
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    align="end"
-                                    className="w-56 border-white/10 bg-black/80 text-white backdrop-blur-xl"
-                                >
-                                    <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10">
-                                        <User className="mr-2 h-4 w-4 text-indigo-400" />
-                                        <span>Profile</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10">
-                                        <Settings className="mr-2 h-4 w-4 text-indigo-400" />
-                                        <span>Settings</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="hover:bg-white/10 focus:bg-white/10">
-                                        <LogOut className="mr-2 h-4 w-4 text-indigo-400" />
-                                        <span>Logout</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
                         </div>
                     </motion.div>
                 </header>
@@ -352,7 +328,7 @@ export default function Dashboard() {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
+                            transition={{ duration: animations ? 0.5 : 0 }}
                             className="flex flex-col gap-4 md:gap-8"
                         >
                             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -393,7 +369,7 @@ export default function Dashboard() {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -10 }}
-                                        transition={{ duration: 0.3 }}
+                                        transition={{ duration: animations ? 0.3 : 0 }}
                                     >
                                         {activeTab === "overview" && (
                                             <TabsContent value="overview" className="space-y-4 mt-0">
@@ -432,9 +408,11 @@ export default function Dashboard() {
                                                             key={item.title}
                                                             initial={{ opacity: 0, y: 20 }}
                                                             animate={{ opacity: 1, y: 0 }}
-                                                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                                                            transition={{ duration: animations ? 0.3 : 0, delay: animations ? index * 0.1 : 0 }}
                                                         >
-                                                            <Card className="border-white/10 bg-black/30 backdrop-blur-sm overflow-hidden relative group">
+                                                            <Card
+                                                                className={`border-white/10 bg-black/30 ${blurEffects ? "backdrop-blur-sm" : ""} overflow-hidden relative group`}
+                                                            >
                                                                 <div
                                                                     className={`absolute inset-0 bg-gradient-to-br from-${item.color}-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                                                                 ></div>
@@ -459,10 +437,12 @@ export default function Dashboard() {
                                                     <motion.div
                                                         initial={{ opacity: 0, y: 20 }}
                                                         animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.3, delay: 0.4 }}
+                                                        transition={{ duration: animations ? 0.3 : 0, delay: animations ? 0.4 : 0 }}
                                                         className="lg:col-span-4"
                                                     >
-                                                        <Card className="border-white/10 bg-black/30 backdrop-blur-sm shadow-xl h-full overflow-hidden relative group">
+                                                        <Card
+                                                            className={`border-white/10 bg-black/30 ${blurEffects ? "backdrop-blur-sm" : ""} shadow-xl h-full overflow-hidden relative group`}
+                                                        >
                                                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                             <CardHeader className="relative z-10">
@@ -491,10 +471,12 @@ export default function Dashboard() {
                                                     <motion.div
                                                         initial={{ opacity: 0, y: 20 }}
                                                         animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ duration: 0.3, delay: 0.5 }}
+                                                        transition={{ duration: animations ? 0.3 : 0, delay: animations ? 0.5 : 0 }}
                                                         className="lg:col-span-3"
                                                     >
-                                                        <Card className="border-white/10 bg-black/30 backdrop-blur-sm shadow-xl h-full overflow-hidden relative group">
+                                                        <Card
+                                                            className={`border-white/10 bg-black/30 ${blurEffects ? "backdrop-blur-sm" : ""} shadow-xl h-full overflow-hidden relative group`}
+                                                        >
                                                             <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                             <CardHeader className="relative z-10">
@@ -524,9 +506,11 @@ export default function Dashboard() {
                                                 <motion.div
                                                     initial={{ opacity: 0, y: 20 }}
                                                     animate={{ opacity: 1, y: 0 }}
-                                                    transition={{ duration: 0.3 }}
+                                                    transition={{ duration: animations ? 0.3 : 0 }}
                                                 >
-                                                    <Card className="border-white/10 bg-black/30 backdrop-blur-sm shadow-xl overflow-hidden relative group">
+                                                    <Card
+                                                        className={`border-white/10 bg-black/30 ${blurEffects ? "backdrop-blur-sm" : ""} shadow-xl overflow-hidden relative group`}
+                                                    >
                                                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                         <CardHeader className="relative z-10">
@@ -536,14 +520,15 @@ export default function Dashboard() {
                                                             </CardDescription>
                                                         </CardHeader>
                                                         <CardContent className="relative z-10">
-                                                            <div className="relative h-96 w-full overflow-hidden rounded-lg border border-white/10 bg-black/50 p-6">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative h-96 w-full overflow-hidden rounded-lg border border-white/10 bg-black/50 p-6">
                                                                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent"></div>
-                                                                <div className="relative z-10 flex h-full flex-col items-center justify-center space-y-4">
-                                                                    <div className="inline-block rounded-full bg-white/5 px-3 py-1 text-sm text-indigo-300 backdrop-blur">
+
+                                                                <div className="relative z-10 flex flex-col justify-center space-y-6">
+                                                                    <div className="inline-block rounded-full bg-white/5 px-3 py-1 text-sm text-indigo-300 backdrop-blur w-fit">
                                                                         <span className="mr-2 inline-block h-2 w-2 rounded-full bg-indigo-400"></span>
                                                                         Habitability Factors
                                                                     </div>
-                                                                    <div className="w-full max-w-md space-y-4">
+                                                                    <div className="w-full space-y-4">
                                                                         {[
                                                                             { name: "Atmospheric Composition", value: 78 },
                                                                             { name: "Surface Temperature", value: 65 },
@@ -572,31 +557,50 @@ export default function Dashboard() {
                                                                             </motion.div>
                                                                         ))}
                                                                     </div>
+                                                                </div>
 
-                                                                    <motion.div
-                                                                        initial={{ opacity: 0, scale: 0.9 }}
-                                                                        animate={{ opacity: 1, scale: 1 }}
-                                                                        transition={{ duration: 0.5, delay: 1 }}
-                                                                        className="mt-8"
-                                                                    >
-                                                                        <div className="relative h-32 w-32 rounded-full">
-                                                                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-md"></div>
-                                                                            <div className="absolute inset-2 rounded-full border border-white/20 bg-black"></div>
-                                                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                                                <div className="text-center">
-                                                                                    <div className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-                                                                                        79%
-                                                                                    </div>
-                                                                                    <div className="text-sm text-white/60">
-                                                                                        Habitability
-                                                                                        <br />
-                                                                                        Score
-                                                                                    </div>
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                                    animate={{ opacity: 1, scale: 1 }}
+                                                                    transition={{ duration: 0.5, delay: 1 }}
+                                                                    className="flex items-center justify-center"
+                                                                >
+                                                                    <div className="relative h-48 w-48 rounded-full">
+                                                                        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 blur-md"></div>
+                                                                        <div className="absolute inset-2 rounded-full border border-white/20 bg-black"></div>
+                                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                                            <div className="text-center">
+                                                                                <div className="text-4xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+                                                                                    79%
+                                                                                </div>
+                                                                                <div className="text-sm text-white/60">
+                                                                                    Habitability
+                                                                                    <br />
+                                                                                    Score
                                                                                 </div>
                                                                             </div>
                                                                         </div>
-                                                                    </motion.div>
-                                                                </div>
+                                                                        <svg className="absolute inset-0" width="192" height="192" viewBox="0 0 192 192">
+                                                                            <circle
+                                                                                cx="96"
+                                                                                cy="96"
+                                                                                r="88"
+                                                                                fill="none"
+                                                                                stroke="url(#gradient-hab)"
+                                                                                strokeWidth="6"
+                                                                                strokeDasharray="553"
+                                                                                strokeDashoffset="116"
+                                                                                strokeLinecap="round"
+                                                                            />
+                                                                            <defs>
+                                                                                <linearGradient id="gradient-hab" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                                                    <stop offset="0%" stopColor="#8B5CF6" />
+                                                                                    <stop offset="100%" stopColor="#D946EF" />
+                                                                                </linearGradient>
+                                                                            </defs>
+                                                                        </svg>
+                                                                    </div>
+                                                                </motion.div>
                                                             </div>
                                                         </CardContent>
                                                     </Card>
@@ -611,7 +615,9 @@ export default function Dashboard() {
                                                     animate={{ opacity: 1, y: 0 }}
                                                     transition={{ duration: 0.3 }}
                                                 >
-                                                    <Card className="border-white/10 bg-black/30 backdrop-blur-sm shadow-xl overflow-hidden relative group">
+                                                    <Card
+                                                        className={`border-white/10 bg-black/30 ${blurEffects ? "backdrop-blur-sm" : ""} shadow-xl overflow-hidden relative group`}
+                                                    >
                                                         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                         <CardHeader className="relative z-10">

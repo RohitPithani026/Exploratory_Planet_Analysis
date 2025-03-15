@@ -50,7 +50,7 @@ export default function SignIn() {
                 <div className="absolute bottom-0 left-0 h-[600px] w-[600px] rounded-full bg-purple-900/20 blur-[100px]"></div>
             </div>
             <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-                <div className="container flex h-16 items-center justify-between">
+                <div className="container flex h-16 items-center justify-between p-8">
                     <Link href="/" className="flex items-center gap-2">
                         <div className="relative">
                             <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur"></div>
