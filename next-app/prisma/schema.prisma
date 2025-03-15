@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  fullName          String
+  email             String   @unique
+  location          String?
+  role              String?
+  bio               String?
+  provider          Provider
+  researchFocus     String?
+  specializations   SpecializedFields[]
+  discoveries       Discovery[]
+}
+
+model SpecializedFields {
+  id             String        @id @default(uuid())
+  fields         SpecialFields
+  added          Boolean?
+  specializedId  String
+  user           User          @relation(fields: [specializedId], references: [id])
+}
+
+model Discovery {
+  id                     String   @id @default(uuid())
+  planetName             String
+  planetRadius           Float?
+  planetMass             Float?
+  orbitalPeriod          Float?
+  equilibriumTemperature Float?
+  starTemperature        Float?
+  starMass               Float?
+  starRadius             Float?
+  starMetallicity        Float?
+  userId                 String
+  user                   User     @relation(fields: [userId], references: [id])
+}
+
+enum SpecialFields {
+  ASTRONOMER
+  DATA_SCIENTIST
+  ASTROPHYSICS
+  PLANETARY_SCIENCE
+  MACHINE_LEARNING_ENGINEER
+  QUANTUM_PHYSICIST
+  SOFTWARE_ENGINEER
+  AI_RESEARCHER
+  SPACE_SCIENTIST
+  COSMOLOGIST
+  GEOPHYSICIST
+  CYBERSECURITY_ANALYST
+  ENVIRONMENTAL_SCIENTIST
+  AEROSPACE_ENGINEER
+}
+
+enum Provider {
+  GOOGLE
+  GITHUB
+  CREDENTIALS
+}

@@ -14,10 +14,12 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ParticleBackground } from "@/components/particle-background"
 import { SpaceBackground } from "@/components/space-background"
+import { useSession } from "next-auth/react"
 
 export default function ProfilePage() {
     const [theme, setTheme] = useState<"light" | "dark">("dark")
     const [isEditing, setIsEditing] = useState(false)
+    const { data: session } = useSession()
 
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light"
@@ -117,7 +119,7 @@ export default function ProfilePage() {
                                 className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
                             >
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                                    <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
                                     <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
                                         JD
                                     </AvatarFallback>
@@ -172,13 +174,13 @@ export default function ProfilePage() {
                                             <div className="relative mb-4">
                                                 <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur"></div>
                                                 <Avatar className="h-24 w-24 border-2 border-black">
-                                                    <AvatarImage src="/placeholder.svg?height=96&width=96" alt="John Doe" />
+                                                    <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="John Doe" />
                                                     <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-2xl">
-                                                        JD
+                                                        {session?.user?.name}
                                                     </AvatarFallback>
                                                 </Avatar>
                                             </div>
-                                            <CardTitle className="text-xl text-white">John Doe</CardTitle>
+                                            <CardTitle className="text-xl text-white">{session?.user?.name}</CardTitle>
                                             <CardDescription className="text-white/60">Exoplanet Researcher</CardDescription>
                                             <div className="flex items-center gap-2 mt-2">
                                                 <Badge className="bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30">Astronomer</Badge>
@@ -191,7 +193,7 @@ export default function ProfilePage() {
                                             <div className="space-y-4">
                                                 <div className="flex items-center gap-3 text-white/70">
                                                     <Mail className="h-4 w-4 text-indigo-400" />
-                                                    <span>john.doe@example.com</span>
+                                                    <span>{session?.user?.email}</span>
                                                 </div>
                                                 <div className="flex items-center gap-3 text-white/70">
                                                     <MapPin className="h-4 w-4 text-indigo-400" />
@@ -272,7 +274,7 @@ export default function ProfilePage() {
                                                                     className="border-white/10 bg-white/5 text-white placeholder:text-white/30 focus:border-indigo-500/50 focus:ring-indigo-500/50"
                                                                 />
                                                             ) : (
-                                                                <p className="text-white p-2 border border-white/10 rounded-md bg-white/5">John Doe</p>
+                                                                <p className="text-white p-2 border border-white/10 rounded-md bg-white/5">{session?.user?.name}</p>
                                                             )}
                                                         </div>
                                                         <div className="space-y-2">
@@ -284,7 +286,7 @@ export default function ProfilePage() {
                                                                 />
                                                             ) : (
                                                                 <p className="text-white p-2 border border-white/10 rounded-md bg-white/5">
-                                                                    john.doe@example.com
+                                                                    {session?.user?.email}
                                                                 </p>
                                                             )}
                                                         </div>

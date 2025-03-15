@@ -4,42 +4,84 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Github, Globe, Loader2 } from "lucide-react"
+import { signIn } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { useToast } from "@/hooks/use-toast"
+import { useTheme } from "@/components/theme-provider"
 
 export default function SignIn() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+    const { toast } = useToast()
+    const { blurEffects } = useTheme()
+
     const [isLoading, setIsLoading] = useState(false)
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [error, setError] = useState("")
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+        setError("")
 
-        // Simulate authentication
-        setTimeout(() => {
+        try {
+            const result = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
+            })
+
+            if (result?.error) {
+                setError("Invalid email or password")
+                toast({
+                    title: "Authentication failed",
+                    description: "Please check your credentials and try again.",
+                    variant: "destructive",
+                })
+            } else {
+                toast({
+                    title: "Success!",
+                    description: "You've been signed in successfully.",
+                })
+                router.push(callbackUrl)
+            }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            setError("An unexpected error occurred")
+            toast({
+                title: "Something went wrong",
+                description: "Please try again later.",
+                variant: "destructive",
+            })
+        } finally {
             setIsLoading(false)
-            router.push("/dashboard")
-        }, 1500)
+        }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleOAuthSignIn = (_provider: string) => {
+    const handleOAuthSignIn = async (provider: string) => {
         setIsLoading(true)
-
-        // Simulate OAuth authentication
-        setTimeout(() => {
+        try {
+            await signIn(provider, {
+                callbackUrl,
+            })
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            toast({
+                title: "Authentication failed",
+                description: "Could not sign in with the selected provider.",
+                variant: "destructive",
+            })
             setIsLoading(false)
-            router.push("/dashboard")
-        }, 1500)
+        }
     }
-
 
     return (
         <div className="flex min-h-screen flex-col bg-[#030014]">
@@ -67,7 +109,9 @@ export default function SignIn() {
             <main className="flex-1 flex items-center justify-center p-4">
                 <div className="relative mx-auto w-full max-w-md space-y-6">
                     <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-r from-indigo-500/5 to-purple-500/5 p-1"></div>
-                    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/50 p-8 shadow-2xl backdrop-blur-sm">
+                    <div
+                        className={`relative overflow-hidden rounded-2xl border border-white/10 bg-black/50 p-8 shadow-2xl ${blurEffects ? "backdrop-blur-sm" : ""}`}
+                    >
                         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-900/30 to-transparent"></div>
                         <div className="space-y-2 text-center">
                             <h1 className="bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-3xl font-bold tracking-tighter text-transparent">
@@ -76,6 +120,11 @@ export default function SignIn() {
                             <p className="text-white/60">Enter your credentials to access your account</p>
                         </div>
                         <div className="mt-8 space-y-6">
+                            {error && (
+                                <div className="rounded-md bg-red-500/10 p-3 text-sm text-red-400 border border-red-500/20">
+                                    {error}
+                                </div>
+                            )}
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="email" className="text-white/70">

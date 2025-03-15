@@ -53,10 +53,26 @@ export function ImageCarousel({ images, interval = 5000, className = "" }: Image
                         className={`absolute inset-0 transition-opacity duration-1000 ${index === currentIndex ? "opacity-100" : "opacity-0 pointer-events-none"
                             }`}
                     >
-                        <Image src={image.src || "/placeholder.svg"} alt={image.alt} className="h-full w-full object-cover" />
-                        
+                        <Image
+                            src={image.src || "/placeholder.svg"}
+                            alt={image.alt}
+                            width={800}
+                            height={400}
+                            className="h-full w-full object-cover"
+                        />
+
                         {image.caption && (
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center text-white text-sm bg-black/70 py-2 px-4 rounded-lg backdrop-blur-md max-w-[80%]">
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center text-white text-sm py-1 px-3 rounded-lg max-w-[90%]"
+                                style={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                                    backdropFilter: 'blur(8px)',
+                                    color: 'white',
+                                    fontWeight: '500',
+                                    letterSpacing: '0.5px',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                }}>
                                 {image.caption}
                             </div>
                         )}
@@ -87,7 +103,7 @@ export function ImageCarousel({ images, interval = 5000, className = "" }: Image
                         onClick={() => setCurrentIndex(index)}
                         className={`h-1.5 w-6 rounded-full transition-all ${index === currentIndex ? "bg-indigo-500" : "bg-white/30"
                             }`}
-                        aria-label={`Go to image ${index + 1}`}/>
+                        aria-label={`Go to image ${index + 1}`} />
                 ))}
             </div>
         </div>

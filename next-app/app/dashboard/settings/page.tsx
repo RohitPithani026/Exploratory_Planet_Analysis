@@ -18,6 +18,7 @@ import { SpaceBackground } from "@/components/space-background"
 import { useTheme } from "@/components/theme-provider"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
+import { useSession } from "next-auth/react"
 
 export default function SettingsPage() {
     const {
@@ -45,6 +46,7 @@ export default function SettingsPage() {
 
     const [activeSection, setActiveSection] = useState("appearance")
     const [isDirty, setIsDirty] = useState(false)
+    const { data: session } = useSession()
 
     // Track changes to detect if settings have been modified
     useEffect(() => {
@@ -173,7 +175,7 @@ export default function SettingsPage() {
                                 className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
                             >
                                 <Avatar className="h-8 w-8">
-                                    <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                                    <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
                                     <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
                                         JD
                                     </AvatarFallback>
@@ -500,7 +502,7 @@ export default function SettingsPage() {
                                                         <h3 className="text-lg font-medium text-white">Profile Picture</h3>
                                                         <div className="flex items-center gap-4">
                                                             <Avatar className="h-20 w-20">
-                                                                <AvatarImage src="/placeholder.svg?height=80&width=80" />
+                                                                <AvatarImage src={session?.user?.image ||"/placeholder.svg?height=80&width=80"} />
                                                                 <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-xl">
                                                                     JD
                                                                 </AvatarFallback>

@@ -6,41 +6,88 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Github, Globe, Loader2 } from "lucide-react"
+import { signIn } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useToast } from "@/hooks/use-toast"
+import { useTheme } from "@/components/theme-provider"
 
 export default function SignUp() {
     const router = useRouter()
+    const { toast } = useToast()
+    const { blurEffects } = useTheme()
+
     const [isLoading, setIsLoading] = useState(false)
     const [name, setName] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [agreeTerms, setAgreeTerms] = useState(false)
+    const [error, setError] = useState("")
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsLoading(true)
+        setError("")
 
-        // Simulate registration
-        setTimeout(() => {
+        // In a real application, you would register the user here
+        // This is a mock implementation for demonstration purposes
+        try {
+            // Simulate API call
+            await new Promise((resolve) => setTimeout(resolve, 1500))
+
+            // After successful registration, sign in the user
+            const result = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
+            })
+
+            if (result?.error) {
+                setError("Registration successful, but could not sign in automatically")
+                toast({
+                    title: "Registration successful!",
+                    description: "Please sign in with your new credentials.",
+                })
+                router.push("/signin")
+            } else {
+                toast({
+                    title: "Registration successful!",
+                    description: "Your account has been created and you're now signed in.",
+                })
+                router.push("/dashboard")
+            }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            setError("An unexpected error occurred")
+            toast({
+                title: "Registration failed",
+                description: "Please try again later.",
+                variant: "destructive",
+            })
+        } finally {
             setIsLoading(false)
-            router.push("/dashboard")
-        }, 1500)
+        }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const handleOAuthSignUp = (_provider: string) => {
+    const handleOAuthSignUp = async (provider: string) => {
         setIsLoading(true)
-
-        // Simulate OAuth registration
-        setTimeout(() => {
+        try {
+            await signIn(provider, {
+                callbackUrl: "/dashboard",
+            })
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            toast({
+                title: "Authentication failed",
+                description: "Could not sign up with the selected provider.",
+                variant: "destructive",
+            })
             setIsLoading(false)
-            router.push("/dashboard")
-        }, 1500)
+        }
     }
 
     return (
@@ -69,7 +116,9 @@ export default function SignUp() {
             <main className="flex-1 flex items-center justify-center p-4">
                 <div className="relative mx-auto w-full max-w-md space-y-6">
                     <div className="absolute inset-0 -z-10 rounded-2xl bg-gradient-to-r from-indigo-500/5 to-purple-500/5 p-1"></div>
-                    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/50 p-8 shadow-2xl backdrop-blur-sm">
+                    <div
+                        className={`relative overflow-hidden rounded-2xl border border-white/10 bg-black/50 p-8 shadow-2xl ${blurEffects ? "backdrop-blur-sm" : ""}`}
+                    >
                         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-indigo-900/30 to-transparent"></div>
                         <div className="space-y-2 text-center">
                             <h1 className="bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-3xl font-bold tracking-tighter text-transparent">
@@ -78,6 +127,11 @@ export default function SignUp() {
                             <p className="text-white/60">Enter your information to get started</p>
                         </div>
                         <div className="mt-8 space-y-6">
+                            {error && (
+                                <div className="rounded-md bg-red-500/10 p-3 text-sm text-red-400 border border-red-500/20">
+                                    {error}
+                                </div>
+                            )}
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="name" className="text-white/70">

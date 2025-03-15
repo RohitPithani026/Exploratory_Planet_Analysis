@@ -3,6 +3,7 @@ import "@/app/globals.css"
 import { Inter, Poppins, Roboto, Montserrat } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/auth-provider"
+import { Suspense } from "react"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -39,9 +40,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${poppins.variable} ${roboto.variable} ${montserrat.variable} font-sans`}>
+        <Suspense>
         <AuthProvider>
           <ThemeProvider>{children}</ThemeProvider>
         </AuthProvider>
+        </Suspense>
       </body>
     </html>
   )

@@ -20,26 +20,26 @@ export default function Home() {
   // Sample images for the carousel
   const exoplanetImages = [
     {
-      src: "https://wallup.net/wp-content/uploads/2016/01/52703-galaxy-space-stars.jpg",
+      src: "/assets/images/earth.jpg",
       alt: "Galaxy and stars",
       caption: "A beautiful view of the galaxy",
     },
     {
-      src: "https://rare-gallery.com/mocahbig/86172-earth-space-digital-universe-hd-4k.jpg",
+      src: "/assets/images/galaxy.jpg",
       alt: "Earth from space",
       caption: "Earth as seen from outer space",
     },
     {
-      src: "https://i.pinimg.com/originals/72/cb/e3/72cbe31328dc80466f83d72d15e299fc.jpg",
+      src: "/assets/images/mars.jpg",
       alt: "Mars landscape",
       caption: "A stunning view of the Mars-like landscape",
     },
     {
-      src: "https://wallup.net/wp-content/uploads/2015/12/211091-stars-night-landscape-starry_night-mountain-long_exposure-galaxy-shooting_stars-comet.jpg",
+      src: "/assets/images/night-sky.jpg",
       alt: "Night sky with stars",
       caption: "The vast and endless night sky filled with stars",
     },
-  ]
+  ]  
 
   return (
     <div className="flex min-h-screen flex-col bg-[#030014]">
