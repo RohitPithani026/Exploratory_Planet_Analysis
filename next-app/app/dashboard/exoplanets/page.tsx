@@ -390,18 +390,18 @@ export default function ExoplanetsPage() {
                 {/* Page size selector */}
                 <div className="flex justify-end mb-4">
                     <div className="flex items-center gap-2">
-                        <label htmlFor="pageSize" className="text-sm">
+                        <label htmlFor="pageSize" className="text-sm text-white/80">
                             Planets per page:
                         </label>
                         <select
                             id="pageSize"
-                            className="border border-white/10 rounded p-1 bg-black/100 text-white"
+                            className="border border-white/20 rounded p-[2px] px-3 bg-[#111111] text-white/80 text-sm hover:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-white/40"
                             value={pagination.pageSize}
                             onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                             disabled={isLoading}
                         >
                             {[10, 20, 50, 100].map((size) => (
-                                <option key={size} value={size}>
+                                <option key={size} value={size} className="text-sm">
                                     {size}
                                 </option>
                             ))}
@@ -434,37 +434,38 @@ export default function ExoplanetsPage() {
                     <div className="flex flex-wrap gap-2 mb-4">
                         <Badge
                             variant="outline"
-                            className={`cursor-pointer ${sortBy === "pl_rade" ? "bg-white/10" : "bg-transparent"}`}
+                            className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_rade" ? "bg-[#121217] text-white" : "bg-transparent"}`}
                             onClick={() => handleSort("pl_rade")}
                         >
-                            <Ruler className="mr-1 h-3 w-3" />
+                            <Ruler className="h-2 w-2" />
                             Radius {sortBy === "pl_rade" && (sortOrder === "asc" ? "↑" : "↓")}
                         </Badge>
                         <Badge
                             variant="outline"
-                            className={`cursor-pointer ${sortBy === "pl_bmasse" ? "bg-white/10" : "bg-transparent"}`}
+                            className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_bmasse" ? "bg-[#121217] text-white" : "bg-transparent"}`}
                             onClick={() => handleSort("pl_bmasse")}
                         >
-                            <Scale className="mr-1 h-3 w-3" />
+                            <Scale className="h-2 w-2" />
                             Mass {sortBy === "pl_bmasse" && (sortOrder === "asc" ? "↑" : "↓")}
                         </Badge>
                         <Badge
                             variant="outline"
-                            className={`cursor-pointer ${sortBy === "pl_orbper" ? "bg-white/10" : "bg-transparent"}`}
+                            className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_orbper" ? "bg-[#121217] text-white" : "bg-transparent"}`}
                             onClick={() => handleSort("pl_orbper")}
                         >
-                            <ArrowUpDown className="mr-1 h-3 w-3" />
+                            <ArrowUpDown className="h-2 w-2" />
                             Orbital Period {sortBy === "pl_orbper" && (sortOrder === "asc" ? "↑" : "↓")}
                         </Badge>
                         <Badge
                             variant="outline"
-                            className={`cursor-pointer ${sortBy === "pl_eqt" ? "bg-white/10" : "bg-transparent"}`}
+                            className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_eqt" ? "bg-[#121217] text-white" : "bg-transparent"}`}
                             onClick={() => handleSort("pl_eqt")}
                         >
-                            <Thermometer className="mr-1 h-3 w-3" />
+                            <Thermometer className="h-2 w-2" />
                             Temperature {sortBy === "pl_eqt" && (sortOrder === "asc" ? "↑" : "↓")}
                         </Badge>
                     </div>
+
 
                     <TabsContent value="all" className="mt-0">
                         {isLoading ? (
@@ -785,55 +786,55 @@ export default function ExoplanetsPage() {
 
                 {/* Pagination controls */}
                 <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-white/100">
                         Showing {pagination.totalItems > 0 ? (pagination.page - 1) * pagination.pageSize + 1 : 0} to{" "}
                         {Math.min(pagination.page * pagination.pageSize, pagination.totalItems)} of{" "}
                         {pagination.totalItems.toLocaleString()} planets
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
+                            className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
                             onClick={() => handlePageChange(1)}
                             disabled={!pagination.hasPrevPage || isLoading}
                         >
                             <ChevronsLeft className="h-4 w-4" />
-                            <span className="sr-only">First page</span>
                         </Button>
 
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
+                            className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
                             onClick={() => handlePageChange(pagination.page - 1)}
                             disabled={!pagination.hasPrevPage || isLoading}
                         >
                             <ChevronLeft className="h-4 w-4" />
-                            <span className="sr-only">Previous page</span>
                         </Button>
 
-                        <span className="px-3 py-1 border rounded-md text-sm">
+                        <span className="px-4 py-2 border border-white/20 rounded-md text-white/90 text-sm bg-[#111111]">
                             {pagination.page} / {pagination.totalPages}
                         </span>
 
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
+                            className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
                             onClick={() => handlePageChange(pagination.page + 1)}
                             disabled={!pagination.hasNextPage || isLoading}
                         >
                             <ChevronRight className="h-4 w-4" />
-                            <span className="sr-only">Next page</span>
                         </Button>
 
                         <Button
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
+                            className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
                             onClick={() => handlePageChange(pagination.totalPages)}
                             disabled={!pagination.hasNextPage || isLoading}
                         >
                             <ChevronsRight className="h-4 w-4" />
-                            <span className="sr-only">Last page</span>
                         </Button>
                     </div>
                 </div>
