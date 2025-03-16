@@ -86,7 +86,8 @@ export default function ExoplanetsPage() {
         document.documentElement.classList.toggle("dark")
     }
 
-    localStorage.setItem("totalExpoPlanets", pagination.totalItems.toLocaleString())
+    const ExpoPlanets = localStorage.setItem("totalExpoPlanets", pagination.totalItems.toLocaleString())
+    console.log(ExpoPlanets)
 
     const fetchExoplanets = async (page: number, pageSize: number) => {
         try {
@@ -128,7 +129,7 @@ export default function ExoplanetsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         fetchExoplanets(pagination.page, pagination.pageSize)
-    }, [pagination.page, pagination.pageSize])
+    }, [pagination.page])
 
 
     // Handle page changes
