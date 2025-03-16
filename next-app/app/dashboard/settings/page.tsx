@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Bell, Globe, Lock, LogOut, Moon, Palette, Search, Shield, Sun, User, Zap, Github } from "lucide-react"
+import { Bell, Globe, Lock, LogOut, Moon, Palette, Shield, Sun, User, Zap, Github } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -140,19 +140,7 @@ export default function SettingsPage() {
                             </nav>
                         </div>
                         <div className="flex items-center gap-4">
-                            <form className="hidden md:flex">
-                                <div className="relative group">
-                                    <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500/50 to-purple-600/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-                                    <div className="relative">
-                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/40" />
-                                        <Input
-                                            type="search"
-                                            placeholder="Search exoplanets..."
-                                            className="w-64 rounded-full border-white/10 bg-white/5 pl-8 text-white placeholder:text-white/30 focus:border-indigo-500/50 focus:ring-indigo-500/50"
-                                        />
-                                    </div>
-                                </div>
-                            </form>
+                            
                             <Button
                                 variant="ghost"
                                 size="icon"

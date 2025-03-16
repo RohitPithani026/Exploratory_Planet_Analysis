@@ -2,7 +2,8 @@ import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import GithubProvider from "next-auth/providers/github"
-import prisma from "./db"
+import prisma from "./prisma" // Make sure this import is correct
+import { Provider } from "@prisma/client"
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -16,6 +17,15 @@ export const authOptions: NextAuthOptions = {
                     response_type: "code",
                 },
             },
+            profile(profile) {
+                return {
+                    id: profile.sub,
+                    fullName: profile.name || profile.login,
+                    email: profile.email,
+                    provider: Provider.GOOGLE,
+                    image: profile.picture,
+                }
+            },
         }),
         GithubProvider({
             clientId: process.env.GITHUB_CLIENT_ID!,
@@ -23,77 +33,89 @@ export const authOptions: NextAuthOptions = {
             authorization: {
                 params: {
                     prompt: "consent",
-                    scope: "read:user user:email",
-                    response_type: "code",
+                    response_type: "code"
                 }
-            }
+            },
+            profile(profile) {
+                return {
+                    id: String(profile.id),
+                    fullName: profile.name || profile.login,
+                    email: profile.email,
+                    provider: Provider.GITHUB,
+                    image: profile.avatar_url,
+                }
+            },
         }),
         CredentialsProvider({
             name: "Credentials",
             credentials: {
                 email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
-                name: { label: "Full Name" }
             },
             async authorize(credentials) {
-                console.log("Credentials:", credentials);
-            
                 if (!credentials?.email || !credentials?.password) {
-                    console.log("Missing credentials");
-                    return null;
+                    return null
                 }
-            
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email },
-                });
-            
-                if (!user) {
-                    console.log("User not found. Creating new user...");
-                    const newUser = await prisma.user.create({
-                        data: {
-                            email: credentials.email,
-                            fullName: credentials.name,
-                            provider: "CREDENTIALS",
-                        },
-                    });
-                    console.log("New User:", newUser);
-                    return newUser;
+
+                try {
+                    // Check if user exists
+                    const user = await prisma.user.findUnique({
+                        where: { email: credentials.email },
+                    })
+
+                    if (user) {
+                        return {
+                            id: user.id,
+                            fullName: user.fullName,
+                            email: user.email,
+                            provider: Provider.CREDENTIALS,
+                        }
+                    }
+
+                    return null
+                } catch (error) {
+                    console.error("Error during authentication:", error)
+                    return null
                 }
-            
-                console.log("User Found:", user);
-                return user;
-            }
-            
+            },
         }),
     ],
     pages: {
         signIn: "/signin",
         signOut: "/",
-        error: "/signin", 
-        newUser: "/signup", 
+        error: "/auth/error",
+        newUser: "/signup",
     },
     callbacks: {
-        async jwt({ token, user, account }) {
+        async jwt({ token, user }) {
             if (user) {
                 token.id = user.id
-            }
-            if (account) {
-                token.provider = account.provider
+                token.fullName = user.fullName
+                token.provider = user.provider
             }
             return token
         },
         async session({ session, token }) {
             if (session.user) {
                 session.user.id = token.id as string
-                session.user.provider = token.provider as string
+                session.user.fullName = token.fullName as string
+                session.user.provider = token.provider as Provider
             }
             return session
         },
+        async redirect({ url, baseUrl }) {
+            // Allows relative callback URLs
+            if (url.startsWith("/")) return `${baseUrl}${url}`
+            // Allows callback URLs on the same origin
+            else if (new URL(url).origin === baseUrl) return url
+            return baseUrl
+        },
     },
+    debug: process.env.NODE_ENV === "development",
     session: {
         strategy: "jwt",
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
     secret: process.env.NEXTAUTH_SECRET,
-    debug: process.env.NODE_ENV === "development",
 }
+

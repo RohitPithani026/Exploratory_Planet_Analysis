@@ -289,7 +289,7 @@ export default function Dashboard() {
                                         <Avatar className="h-8 w-8">
                                             <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
                                             <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.name?.charAt(0) || "U"}
+                                                {session?.user?.fullName?.charAt(0) || "U"}
                                             </AvatarFallback>
                                         </Avatar>
                                     </Button>
@@ -301,11 +301,11 @@ export default function Dashboard() {
                                         <Avatar className="h-12 w-12">
                                             <AvatarImage src={session?.user?.image || "/placeholder.svg?height=48&width=48"} />
                                             <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.name?.charAt(0) || "U"}
+                                                {session?.user?.fullName?.charAt(0) || "U"}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="space-y-1 flex-1">
-                                            <h4 className="text-sm font-semibold">{session?.user?.name || "John Doe"}</h4>
+                                            <h4 className="text-sm font-semibold">{session?.user?.fullName || "John Doe"}</h4>
                                             <p className="text-xs text-white/60">{session?.user?.email || "Exoplanet Researcher"}</p>
                                             <div className="flex items-center pt-2">
                                                 <Link
@@ -377,7 +377,7 @@ export default function Dashboard() {
                                                     {[
                                                         {
                                                             title: "Total Exoplanets",
-                                                            value: "5,273",
+                                                            value: localStorage.getItem("totalExpoPlanets"),
                                                             change: "+120",
                                                             icon: <Globe className="h-4 w-4 text-indigo-400" />,
                                                             color: "indigo",
@@ -486,12 +486,20 @@ export default function Dashboard() {
                                                             <CardContent className="relative z-10">
                                                                 <div className="space-y-6">
                                                                     {[
-                                                                        { name: "Kepler-452b", type: "Super Earth", date: "2 days ago", score: 0.82 },
-                                                                        { name: "TRAPPIST-1e", type: "Earth-like", date: "5 days ago", score: 0.91 },
-                                                                        { name: "HD 219134 b", type: "Rocky", date: "1 week ago", score: 0.67 },
-                                                                        { name: "K2-18b", type: "Mini-Neptune", date: "2 weeks ago", score: 0.75 },
+                                                                        { name: "Kepler-452b", type: "Super Earth", distance: "2 days ago", score: 0.82 },
+                                                                        { name: "TRAPPIST-1e", type: "Earth-like", distance: "5 days ago", score: 0.91 },
+                                                                        { name: "HD 219134 b", type: "Rocky", distance: "1 week ago", score: 0.67 },
+                                                                        { name: "K2-18b", type: "Mini-Neptune", distance: "2 weeks ago", score: 0.75 },
                                                                     ].map((planet, index) => (
-                                                                        <PlanetCard key={planet.name} planet={planet} index={index} />
+                                                                        <PlanetCard
+                                                                            key={planet.name}
+                                                                            name={planet.name}
+                                                                            type={planet.type}
+                                                                            distance={planet.distance}
+                                                                            habitabilityScore={planet.score}
+                                                                            index={index}
+                                                                            score={planet.score}
+                                                                        />
                                                                     ))}
                                                                 </div>
                                                             </CardContent>

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Bell, Calendar, ChevronRight, Edit, Globe, Mail, MapPin, Moon, Search, Star, Sun } from "lucide-react"
+import { Bell, Calendar, ChevronRight, Edit, Globe, Mail, MapPin, Moon, Star, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -84,19 +84,7 @@ export default function ProfilePage() {
                             </nav>
                         </div>
                         <div className="flex items-center gap-4">
-                            <form className="hidden md:flex">
-                                <div className="relative group">
-                                    <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500/50 to-purple-600/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-                                    <div className="relative">
-                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/40" />
-                                        <Input
-                                            type="search"
-                                            placeholder="Search exoplanets..."
-                                            className="w-64 rounded-full border-white/10 bg-white/5 pl-8 text-white placeholder:text-white/30 focus:border-indigo-500/50 focus:ring-indigo-500/50"
-                                        />
-                                    </div>
-                                </div>
-                            </form>
+                            
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -121,7 +109,7 @@ export default function ProfilePage() {
                                 <Avatar className="h-8 w-8">
                                     <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
                                     <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                        JD
+                                        {session?.user.fullName.charAt(0)}
                                     </AvatarFallback>
                                 </Avatar>
                             </Button>
@@ -176,11 +164,11 @@ export default function ProfilePage() {
                                                 <Avatar className="h-24 w-24 border-2 border-black">
                                                     <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="John Doe" />
                                                     <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-2xl">
-                                                        {session?.user?.name}
+                                                        {session?.user?.fullName.charAt(0)}
                                                     </AvatarFallback>
                                                 </Avatar>
                                             </div>
-                                            <CardTitle className="text-xl text-white">{session?.user?.name}</CardTitle>
+                                            <CardTitle className="text-xl text-white">{session?.user?.fullName}</CardTitle>
                                             <CardDescription className="text-white/60">Exoplanet Researcher</CardDescription>
                                             <div className="flex items-center gap-2 mt-2">
                                                 <Badge className="bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30">Astronomer</Badge>
@@ -274,7 +262,7 @@ export default function ProfilePage() {
                                                                     className="border-white/10 bg-white/5 text-white placeholder:text-white/30 focus:border-indigo-500/50 focus:ring-indigo-500/50"
                                                                 />
                                                             ) : (
-                                                                <p className="text-white p-2 border border-white/10 rounded-md bg-white/5">{session?.user?.name}</p>
+                                                                <p className="text-white p-2 border border-white/10 rounded-md bg-white/5">{session?.user?.fullName}</p>
                                                             )}
                                                         </div>
                                                         <div className="space-y-2">

@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -26,6 +26,48 @@ export default function SignIn() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
+
+    // Check for error in URL
+    const errorParam = searchParams.get("error")
+
+    // Handle OAuth errors
+    React.useEffect(() => {
+        if (errorParam) {
+            let errorMessage = "An error occurred during sign in"
+
+            switch (errorParam) {
+                case "OAuthSignin":
+                case "OAuthCallback":
+                case "OAuthCreateAccount":
+                    errorMessage = "There was a problem with the OAuth provider"
+                    break
+                case "EmailCreateAccount":
+                    errorMessage = "Could not create an account with this email"
+                    break
+                case "Callback":
+                    errorMessage = "Invalid callback URL"
+                    break
+                case "OAuthAccountNotLinked":
+                    errorMessage = "This email is already associated with another account"
+                    break
+                case "EmailSignin":
+                    errorMessage = "Check your email for a sign in link"
+                    break
+                case "CredentialsSignin":
+                    errorMessage = "Invalid credentials"
+                    break
+                default:
+                    errorMessage = "An unknown error occurred"
+            }
+
+            setError(errorMessage)
+            toast({
+                title: "Authentication failed",
+                description: errorMessage,
+                variant: "destructive",
+            })
+        }
+    }, [errorParam, toast])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
