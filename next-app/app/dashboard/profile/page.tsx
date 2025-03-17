@@ -21,6 +21,7 @@ import { useTheme } from "@/components/theme-provider"
 import { useToast } from "@/hooks/use-toast"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 
 interface UserProfile {
     id: string
@@ -40,7 +41,7 @@ interface UserProfile {
 export default function ProfilePage() {
     const { data: session } = useSession()
     const { toast } = useToast()
-    const { theme, setTheme, animations, particleEffects } = useTheme()
+    const { theme, setTheme, animations, particleEffects, blurEffects } = useTheme()
 
     const [isEditing, setIsEditing] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
@@ -217,18 +218,46 @@ export default function ProfilePage() {
                                 <span className="sr-only">Toggle theme</span>
                             </Button>
                             
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
-                            >
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={profile?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
-                                    <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                        {profile?.fullName?.charAt(0) || "U"}
-                                    </AvatarFallback>
-                                </Avatar>
-                            </Button>
+                            <HoverCard>
+                                <HoverCardTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
+                                    >
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
+                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                                                {session?.user?.fullName?.charAt(0) || "U"}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </HoverCardTrigger>
+                                <HoverCardContent
+                                    className={`w-80 border-white/10 bg-black/80 text-white ${blurEffects ? "backdrop-blur-xl" : ""}`}
+                                >
+                                    <div className="flex justify-between space-x-4">
+                                        <Avatar className="h-12 w-12">
+                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=48&width=48"} />
+                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                                                {session?.user?.fullName?.charAt(0) || "U"}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="space-y-1 flex-1">
+                                            <h4 className="text-sm font-semibold">{session?.user?.fullName || "John Doe"}</h4>
+                                            <p className="text-xs text-white/60">{session?.user?.email || "Exoplanet Researcher"}</p>
+                                            <div className="flex items-center pt-2">
+                                                <Link
+                                                    href="/dashboard/profile"
+                                                    className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center"
+                                                >
+                                                    View profile <ChevronRight className="h-3 w-3 ml-1" />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </HoverCardContent>
+                            </HoverCard>
                         </div>
                     </motion.div>
                 </header>
