@@ -1,10 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import prisma from "@/lib/db"
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         const session = await getServerSession(authOptions)
 
@@ -14,7 +13,16 @@ export async function GET(req: NextRequest) {
 
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
-            include: {
+            select: {
+                id: true,
+                fullName: true,
+                email: true,
+                location: true,
+                role: true,
+                bio: true,
+                provider: true,
+                researchFocus: true,
+                image: true,
                 specializations: true,
                 discoveries: true,
             },
@@ -24,13 +32,10 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
-        // Remove sensitive information
-        const { ...userProfile } = user
-
-        return NextResponse.json(userProfile)
+        return NextResponse.json(user)
     } catch (error) {
-        console.error("Profile fetch error:", error)
-        return NextResponse.json({ error: "An error occurred while fetching the profile" }, { status: 500 })
+        console.error("Error fetching user profile:", error)
+        return NextResponse.json({ error: "Failed to fetch user profile" }, { status: 500 })
     }
 }
 
@@ -42,22 +47,25 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
-        const { fullName, location, bio, researchFocus } = await req.json()
+        const data = await req.json()
 
+        // Update user profile
         const updatedUser = await prisma.user.update({
             where: { id: session.user.id },
             data: {
-                fullName,
-                location,
-                bio,
-                researchFocus,
+                fullName: data.fullName,
+                location: data.location,
+                role: data.role,
+                bio: data.bio,
+                researchFocus: data.researchFocus,
+                image: data.image,
             },
         })
 
         return NextResponse.json(updatedUser)
     } catch (error) {
-        console.error("Profile update error:", error)
-        return NextResponse.json({ error: "An error occurred while updating the profile" }, { status: 500 })
+        console.error("Error updating user profile:", error)
+        return NextResponse.json({ error: "Failed to update user profile" }, { status: 500 })
     }
 }
 

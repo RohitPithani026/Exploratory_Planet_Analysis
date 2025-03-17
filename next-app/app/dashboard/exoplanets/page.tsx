@@ -19,7 +19,6 @@ import {
     Scale, Ruler,
     ArrowUpDown,
     RefreshCw,
-    Bell,
     Moon,
     Sun,
     ChevronLeft,
@@ -126,7 +125,7 @@ export default function ExoplanetsPage() {
         }
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     useEffect(() => {
         fetchExoplanets(pagination.page, pagination.pageSize)
     }, [pagination.page])
@@ -312,13 +311,6 @@ export default function ExoplanetsPage() {
                                 Profile
                                 <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
                             </Link>
-                            <Link
-                                href="/dashboard/settings"
-                                className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                            >
-                                Settings
-                                <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                            </Link>
                         </nav>
                     </div>
                     <div className="flex items-center gap-4">
@@ -332,12 +324,7 @@ export default function ExoplanetsPage() {
                             {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
                             <span className="sr-only">Toggle theme</span>
                         </Button>
-                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 relative group">
-                            <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            <Bell className="h-5 w-5" />
-                            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-indigo-500"></span>
-                            <span className="sr-only">Notifications</span>
-                        </Button>
+                        
                         <Button
                             variant="ghost"
                             size="icon"

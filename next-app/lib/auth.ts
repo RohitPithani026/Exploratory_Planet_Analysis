@@ -2,7 +2,7 @@ import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import GithubProvider from "next-auth/providers/github"
-import prisma from "./prisma" // Make sure this import is correct
+import prisma from "./db"
 import { Provider } from "@prisma/client"
 
 export const authOptions: NextAuthOptions = {
@@ -17,13 +17,27 @@ export const authOptions: NextAuthOptions = {
                     response_type: "code",
                 },
             },
-            profile(profile) {
+            async profile(profile) {
+                const user = await prisma.user.upsert({
+                    where: { email: profile.email },
+                    update: {
+                        fullName: profile.name || profile.login,
+                        image: profile.picture,
+                        provider: Provider.GOOGLE,
+                    },
+                    create: {
+                        fullName: profile.name || profile.login,
+                        email: profile.email,
+                        provider: Provider.GOOGLE,
+                        image: profile.picture,
+                    },
+                })
                 return {
-                    id: profile.sub,
-                    fullName: profile.name || profile.login,
-                    email: profile.email,
-                    provider: Provider.GOOGLE,
-                    image: profile.picture,
+                    id: user.id,
+                    fullName: user.fullName,
+                    email: user.email,
+                    provider: user.provider,
+                    image: user.image,
                 }
             },
         }),
@@ -33,16 +47,31 @@ export const authOptions: NextAuthOptions = {
             authorization: {
                 params: {
                     prompt: "consent",
-                    response_type: "code"
-                }
+                    access_type: "offline",
+                    response_type: "code",
+                },
             },
-            profile(profile) {
+            async profile(profile) {
+                const user = await prisma.user.upsert({
+                    where: { email: profile.email },
+                    update: {
+                        fullName: profile.name || profile.login,
+                        image: profile.avatar_url,
+                        provider: Provider.GITHUB,
+                    },
+                    create: {
+                        fullName: profile.name || profile.login,
+                        email: profile.email,
+                        provider: Provider.GITHUB,
+                        image: profile.avatar_url,
+                    },
+                })
                 return {
-                    id: String(profile.id),
-                    fullName: profile.name || profile.login,
-                    email: profile.email,
-                    provider: Provider.GITHUB,
-                    image: profile.avatar_url,
+                    id: user.id,
+                    fullName: user.fullName,
+                    email: user.email,
+                    provider: user.provider,
+                    image: user.image,
                 }
             },
         }),
@@ -53,30 +82,23 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                if (!credentials?.email || !credentials?.password) {
-                    return null
-                }
+                if (!credentials?.email || !credentials?.password) return null
 
-                try {
-                    // Check if user exists
-                    const user = await prisma.user.findUnique({
-                        where: { email: credentials.email },
-                    })
+                const user = await prisma.user.findUnique({
+                    where: { email: credentials.email },
+                })
 
-                    if (user) {
-                        return {
-                            id: user.id,
-                            fullName: user.fullName,
-                            email: user.email,
-                            provider: Provider.CREDENTIALS,
-                        }
+                if (user) {
+                    return {
+                        id: user.id,
+                        fullName: user.fullName,
+                        email: user.email,
+                        provider: Provider.CREDENTIALS,
+                        image: user.image,
                     }
-
-                    return null
-                } catch (error) {
-                    console.error("Error during authentication:", error)
-                    return null
                 }
+
+                return null
             },
         }),
     ],
@@ -92,6 +114,7 @@ export const authOptions: NextAuthOptions = {
                 token.id = user.id
                 token.fullName = user.fullName
                 token.provider = user.provider
+                token.image = user.image
             }
             return token
         },
@@ -100,22 +123,14 @@ export const authOptions: NextAuthOptions = {
                 session.user.id = token.id as string
                 session.user.fullName = token.fullName as string
                 session.user.provider = token.provider as Provider
+                session.user.image = (token.image as string) || null
             }
             return session
         },
-        async redirect({ url, baseUrl }) {
-            // Allows relative callback URLs
-            if (url.startsWith("/")) return `${baseUrl}${url}`
-            // Allows callback URLs on the same origin
-            else if (new URL(url).origin === baseUrl) return url
-            return baseUrl
-        },
     },
-    // debug: process.env.NODE_ENV === "development",
     session: {
         strategy: "jwt",
         maxAge: 30 * 24 * 60 * 60, // 30 days
     },
     secret: process.env.NEXTAUTH_SECRET,
 }
-

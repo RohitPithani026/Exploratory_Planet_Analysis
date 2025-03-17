@@ -5,13 +5,11 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import {
     BarChart3,
-    Bell,
     ChevronRight,
     Globe,
     Menu,
     Moon,
     Search,
-    Settings,
     Star,
     Sun,
     User,
@@ -177,13 +175,6 @@ export default function Dashboard() {
                                             <User className="h-5 w-5" />
                                             <span>Profile</span>
                                         </Link>
-                                        <Link
-                                            href="/dashboard/settings"
-                                            className="flex items-center gap-2 text-white/70 transition-colors hover:text-white"
-                                        >
-                                            <Settings className="h-5 w-5" />
-                                            <span>Settings</span>
-                                        </Link>
                                     </nav>
                                 </SheetContent>
                             </Sheet>
@@ -220,13 +211,6 @@ export default function Dashboard() {
                                     Profile
                                     <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
                                 </Link>
-                                <Link
-                                    href="/dashboard/settings"
-                                    className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Settings
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                                </Link>
                             </nav>
                         </div>
                         <div className="flex items-center gap-4">
@@ -259,22 +243,6 @@ export default function Dashboard() {
                                     </TooltipTrigger>
                                     <TooltipContent>
                                         <p>Toggle theme</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 relative group">
-                                            <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            <Bell className="h-5 w-5" />
-                                            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-indigo-500"></span>
-                                            <span className="sr-only">Notifications</span>
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Notifications</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
