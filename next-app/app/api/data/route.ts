@@ -16,11 +16,13 @@ export async function GET() {
         return NextResponse.json({ error: "CSV file not found" }, { status: 404 });
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise<Response>((resolve, reject) => {
         fs.createReadStream(filePath)
             .pipe(csv())
             .on("data", (data: ExoplanetData) => results.push(data))
-            .on("end", () => resolve(NextResponse.json(results)))
-            .on("error", (err) => reject(NextResponse.json({ error: "Failed to process CSV file", details: err.message }, { status: 500 })));
+            .on("end", () => resolve(NextResponse.json(results, { status: 200 }))) // ✅ Returns a Response
+            .on("error", (err) =>
+                reject(NextResponse.json({ error: "Failed to process CSV file", details: err.message }, { status: 500 }))
+            );
     });
 }
