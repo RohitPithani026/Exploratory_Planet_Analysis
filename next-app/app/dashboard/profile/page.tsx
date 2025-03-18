@@ -418,7 +418,7 @@ export default function ProfilePage() {
 
                                                 <TabsContent value="personal" className="space-y-8">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-4">
                                                             <Label className="text-sm font-medium text-white/70">Full Name</Label>
                                                             {isEditing ? (
                                                                 <Input
@@ -454,7 +454,7 @@ export default function ProfilePage() {
                                                                 </p>
                                                             )}
                                                         </div>
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-4">
                                                             <Label className="text-sm font-medium text-white/70">Role</Label>
                                                             {isEditing ? (
                                                                 <Input
@@ -470,7 +470,7 @@ export default function ProfilePage() {
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="space-y-2">
+                                                    <div className="space-y-4">
                                                         <Label className="text-sm font-medium text-white/70">Bio</Label>
                                                         {isEditing ? (
                                                             <Textarea
