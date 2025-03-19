@@ -41,6 +41,20 @@ type Exoplanet = {
     st_mass: number | null
     st_rad: number | null
     st_met: number | null
+    pl_eqt_normalized: number | null;
+    st_met_normalized: number | null;
+    surface_gravity: number | null;
+    surface_gravity_normalized: number | null;
+    habitability_score: number | null;
+    terraformability_score: number | null;
+    st_activity: number | null;
+    pl_atmos: number | null;
+    pl_surf_temp: number | null;
+    pl_escape_vel: number | null;
+    pl_radiation_flux: number | null;
+    ESI: number | null;
+    pl_water_probability: number | null;
+
 }
 
 type PaginationInfo = {
@@ -109,8 +123,12 @@ export default function ExoplanetsPage() {
 
             // Filter out planets with missing essential data
             const validPlanets = data.data
-                .filter((planet: Exoplanet) => planet.pl_name && (planet.pl_rade || planet.pl_bmasse))
-                .slice(0, 100) // Limit to 100 planets for performance
+                .filter((planet: Exoplanet) =>
+                    planet.pl_name &&
+                    (typeof planet.pl_rade === "number" || typeof planet.pl_bmasse === "number")
+                )
+                .slice(0, 100);
+
 
             setExoplanets(validPlanets)
             setFilteredPlanets(validPlanets)
@@ -197,43 +215,6 @@ export default function ExoplanetsPage() {
         }
     }
 
-    const getHabitabilityScore = (planet: Exoplanet) => {
-        // Simple habitability score calculation based on available data
-        // This is a simplified model and not scientifically accurate
-        let score = 0
-        let factors = 0
-
-        // Earth-like radius (0.5 to 2.0 Earth radii)
-        if (planet.pl_rade !== null) {
-            const radiusScore = 1 - Math.min(Math.abs(planet.pl_rade - 1), 1)
-            score += radiusScore
-            factors++
-        }
-
-        // Earth-like mass (0.5 to 2.0 Earth masses)
-        if (planet.pl_bmasse !== null) {
-            const massScore = 1 - Math.min(Math.abs(planet.pl_bmasse - 1), 1)
-            score += massScore
-            factors++
-        }
-
-        // Temperature in habitable range (250K to 350K)
-        if (planet.pl_eqt !== null) {
-            const tempScore = planet.pl_eqt > 250 && planet.pl_eqt < 350 ? 1 - Math.abs((planet.pl_eqt - 300) / 100) : 0
-            score += tempScore
-            factors++
-        }
-
-        // Orbital period (consider Earth-like periods more habitable)
-        if (planet.pl_orbper !== null) {
-            const periodScore = 1 - Math.min(Math.abs(Math.log10(planet.pl_orbper / 365)), 1)
-            score += periodScore
-            factors++
-        }
-
-        return factors > 0 ? score / factors : 0
-    }
-
     const getPlanetType = (planet: Exoplanet) => {
         if (!planet.pl_rade) return "Unknown"
 
@@ -274,10 +255,10 @@ export default function ExoplanetsPage() {
     }
 
     const getHabitabilityColor = (score: number) => {
-        if (score > 0.8) return "text-green-400"
-        if (score > 0.6) return "text-blue-400"
-        if (score > 0.4) return "text-yellow-400"
-        if (score > 0.2) return "text-orange-400"
+        if (score > 70) return "text-green-400"
+        if (score > 50) return "text-blue-400"
+        if (score > 30) return "text-yellow-400"
+        if (score > 10) return "text-orange-400"
         return "text-red-400"
     }
 
@@ -537,7 +518,7 @@ export default function ExoplanetsPage() {
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                     {filteredPlanets.map((planet, index) => {
-                                        const habitabilityScore = getHabitabilityScore(planet)
+                                        const habitabilityScore = planet.habitability_score
                                         const planetType = getPlanetType(planet)
                                         const starType = getStarType(planet)
 
@@ -594,22 +575,48 @@ export default function ExoplanetsPage() {
                                                         <div className="pt-2">
                                                             <div className="flex justify-between items-center mb-1">
                                                                 <span className="text-xs text-white/70">Habitability Score</span>
-                                                                <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore)}`}>
-                                                                    {(habitabilityScore * 100).toFixed(0)}%
+                                                                <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore!)}`}>
+                                                                    {planet.habitability_score?.toFixed(0)} %
                                                                 </span>
                                                             </div>
                                                             <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                                                                 <motion.div
                                                                     initial={{ width: 0 }}
-                                                                    animate={{ width: `${habitabilityScore * 100}%` }}
+                                                                    animate={{ width: `${planet.habitability_score}%` }}
                                                                     transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
-                                                                    className={`h-full rounded-full ${habitabilityScore > 0.8
+                                                                    className={`h-full rounded-full ${habitabilityScore! > 70
                                                                         ? "bg-green-500"
-                                                                        : habitabilityScore > 0.6
+                                                                        : habitabilityScore! > 50
                                                                             ? "bg-blue-500"
-                                                                            : habitabilityScore > 0.4
+                                                                            : habitabilityScore! > 30
                                                                                 ? "bg-yellow-500"
-                                                                                : habitabilityScore > 0.2
+                                                                                : habitabilityScore! > 10
+                                                                                    ? "bg-orange-500"
+                                                                                    : "bg-red-500"
+                                                                        }`}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pt-2">
+                                                            <div className="flex justify-between items-center mb-1">
+                                                                <span className="text-xs text-white/70">Terraformability Score</span>
+                                                                <span className={`text-xs font-medium ${getHabitabilityColor(planet.terraformability_score!)}`}>
+                                                                    {planet.terraformability_score?.toFixed(0)} %
+                                                                </span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${planet.terraformability_score}%` }}
+                                                                    transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
+                                                                    className={`h-full rounded-full ${planet.terraformability_score! > 70
+                                                                        ? "bg-green-500"
+                                                                        : planet.terraformability_score! > 50
+                                                                            ? "bg-blue-500"
+                                                                            : planet.terraformability_score! > 30
+                                                                                ? "bg-yellow-500"
+                                                                                : planet.terraformability_score! > 10
                                                                                     ? "bg-orange-500"
                                                                                     : "bg-red-500"
                                                                         }`}
@@ -619,14 +626,17 @@ export default function ExoplanetsPage() {
                                                     </CardContent>
 
                                                     <CardFooter className="relative z-10">
-                                                        <Button
-                                                            variant="outline"
-                                                            className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
-                                                        >
-                                                            <Star className="mr-2 h-4 w-4" />
-                                                            View Details
-                                                        </Button>
+                                                        <Link href={`/dashboard/exoplanet/${planet.pl_name?.replace(/\s+/g, '-').toLowerCase()}`} className="w-full">
+                                                            <Button
+                                                                variant="outline"
+                                                                className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                                                            >
+                                                                <Star className="mr-2 h-4 w-4" />
+                                                                View Details
+                                                            </Button>
+                                                        </Link>
                                                     </CardFooter>
+
                                                 </Card>
                                             </motion.div>
                                         )
@@ -638,9 +648,9 @@ export default function ExoplanetsPage() {
                         <TabsContent value="habitable" className="mt-0">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                                 {filteredPlanets
-                                    .filter((planet) => getHabitabilityScore(planet) > 0.6)
+                                    .filter((planet) => planet.habitability_score! > 50)
                                     .map((planet, index) => {
-                                        const habitabilityScore = getHabitabilityScore(planet)
+                                        const habitabilityScore = planet.habitability_score
                                         const planetType = getPlanetType(planet)
                                         const starType = getStarType(planet)
 
@@ -699,16 +709,51 @@ export default function ExoplanetsPage() {
                                                         <div className="pt-2">
                                                             <div className="flex justify-between items-center mb-1">
                                                                 <span className="text-xs text-white/70">Habitability Score</span>
-                                                                <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore)}`}>
-                                                                    {(habitabilityScore * 100).toFixed(0)}%
+                                                                <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore!)}`}>
+                                                                    {habitabilityScore?.toFixed(0)}%
                                                                 </span>
                                                             </div>
                                                             <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                                                                 <motion.div
                                                                     initial={{ width: 0 }}
-                                                                    animate={{ width: `${habitabilityScore * 100}%` }}
+                                                                    animate={{ width: `${planet.habitability_score}%` }}
                                                                     transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
-                                                                    className="h-full rounded-full bg-green-500"
+                                                                    className={`h-full rounded-full ${habitabilityScore! > 70
+                                                                        ? "bg-green-500"
+                                                                        : habitabilityScore! > 50
+                                                                            ? "bg-blue-500"
+                                                                            : habitabilityScore! > 30
+                                                                                ? "bg-yellow-500"
+                                                                                : habitabilityScore! > 10
+                                                                                    ? "bg-orange-500"
+                                                                                    : "bg-red-500"
+                                                                        }`}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pt-2">
+                                                            <div className="flex justify-between items-center mb-1">
+                                                                <span className="text-xs text-white/70">Terraformability Score</span>
+                                                                <span className={`text-xs font-medium ${getHabitabilityColor(planet.terraformability_score!)}`}>
+                                                                    {planet.terraformability_score?.toFixed(0)}%
+                                                                </span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${planet.terraformability_score}%` }}
+                                                                    transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
+                                                                    className={`h-full rounded-full ${planet.terraformability_score! > 70
+                                                                        ? "bg-green-500"
+                                                                        : planet.terraformability_score! > 50
+                                                                            ? "bg-blue-500"
+                                                                            : planet.terraformability_score! > 30
+                                                                                ? "bg-yellow-500"
+                                                                                : planet.terraformability_score! > 10
+                                                                                    ? "bg-orange-500"
+                                                                                    : "bg-red-500"
+                                                                        }`}
                                                                 />
                                                             </div>
                                                         </div>
@@ -736,7 +781,7 @@ export default function ExoplanetsPage() {
                                 {filteredPlanets
                                     .filter((planet) => getPlanetType(planet) === "Earth-like")
                                     .map((planet, index) => {
-                                        const habitabilityScore = getHabitabilityScore(planet)
+                                        const habitabilityScore = planet.habitability_score
                                         const planetType = getPlanetType(planet)
                                         const starType = getStarType(planet)
 
@@ -793,16 +838,51 @@ export default function ExoplanetsPage() {
                                                         <div className="pt-2">
                                                             <div className="flex justify-between items-center mb-1">
                                                                 <span className="text-xs text-white/70">Habitability Score</span>
-                                                                <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore)}`}>
-                                                                    {(habitabilityScore * 100).toFixed(0)}%
+                                                                <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore!)}`}>
+                                                                    {habitabilityScore?.toFixed(0)}%
                                                                 </span>
                                                             </div>
                                                             <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
                                                                 <motion.div
                                                                     initial={{ width: 0 }}
-                                                                    animate={{ width: `${habitabilityScore * 100}%` }}
+                                                                    animate={{ width: `${habitabilityScore}%` }}
                                                                     transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
-                                                                    className="h-full rounded-full bg-green-500"
+                                                                    className={`h-full rounded-full ${habitabilityScore! > 70
+                                                                        ? "bg-green-500"
+                                                                        : habitabilityScore! > 50
+                                                                            ? "bg-blue-500"
+                                                                            : habitabilityScore! > 30
+                                                                                ? "bg-yellow-500"
+                                                                                : habitabilityScore! > 10
+                                                                                    ? "bg-orange-500"
+                                                                                    : "bg-red-500"
+                                                                        }`}
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pt-2">
+                                                            <div className="flex justify-between items-center mb-1">
+                                                                <span className="text-xs text-white/70">Terraformability Score</span>
+                                                                <span className={`text-xs font-medium ${getHabitabilityColor(planet.terraformability_score!)}`}>
+                                                                    {planet.terraformability_score?.toFixed(0)}%
+                                                                </span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${planet.terraformability_score!}%` }}
+                                                                    transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
+                                                                    className={`h-full rounded-full ${planet.terraformability_score! > 70
+                                                                        ? "bg-green-500"
+                                                                        : planet.terraformability_score! > 50
+                                                                            ? "bg-blue-500"
+                                                                            : planet.terraformability_score! > 30
+                                                                                ? "bg-yellow-500"
+                                                                                : planet.terraformability_score! > 10
+                                                                                    ? "bg-orange-500"
+                                                                                    : "bg-red-500"
+                                                                        }`}
                                                                 />
                                                             </div>
                                                         </div>
