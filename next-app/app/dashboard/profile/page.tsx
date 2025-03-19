@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Calendar, ChevronRight, Edit, Globe, Mail, MapPin, Moon, Star, Sun, Save, X, LogOut } from "lucide-react"
@@ -42,7 +42,8 @@ export default function ProfilePage() {
     const { data: session } = useSession()
     const { toast } = useToast()
     const { theme, setTheme, animations, particleEffects, blurEffects } = useTheme()
-
+    const containerRef = useRef<HTMLDivElement>(null)
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [isEditing, setIsEditing] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -53,6 +54,24 @@ export default function ProfilePage() {
         bio: "",
         researchFocus: "",
     })
+
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect()
+                setMousePosition({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                })
+            }
+        }
+
+        window.addEventListener("mousemove", handleMouseMove)
+
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove)
+        }
+    }, [toast])
 
     // Fetch user profile
     useEffect(() => {
@@ -154,13 +173,18 @@ export default function ProfilePage() {
     }
 
     return (
-        <div className={theme === "dark" ? "dark" : ""}>
+        <div className={theme === "dark" ? "dark" : ""} ref={containerRef}>
             <div className="relative flex min-h-screen flex-col bg-[#030014] dark:bg-[#030014] text-white overflow-hidden">
-                {particleEffects && (
-                    <>
-                        <SpaceBackground />
-                        <ParticleBackground />
-                    </>
+                {particleEffects && <ParticleBackground />}
+                {particleEffects && <SpaceBackground />}
+
+                {animations && (
+                    <div
+                        className="pointer-events-none absolute inset-0 z-30 opacity-70"
+                        style={{
+                            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.15), transparent 25%)`,
+                        }}
+                    />
                 )}
 
                 <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
@@ -217,7 +241,7 @@ export default function ProfilePage() {
                                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
                                 <span className="sr-only">Toggle theme</span>
                             </Button>
-                            
+
                             <HoverCard>
                                 <HoverCardTrigger asChild>
                                     <Button

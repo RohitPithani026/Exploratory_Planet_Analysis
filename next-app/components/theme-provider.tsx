@@ -2,22 +2,19 @@
 
 import type * as React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 type Theme = "dark" | "light" | "system"
-type ColorScheme = "cosmic-indigo" | "nebula-blue" | "stellar-green" | "solar-orange"
 
 interface ThemeProviderProps {
     children: React.ReactNode
     defaultTheme?: Theme
-    defaultColorScheme?: ColorScheme
     storageKey?: string
 }
 
 interface ThemeProviderState {
     theme: Theme
-    colorScheme: ColorScheme
     setTheme: (theme: Theme) => void
-    setColorScheme: (colorScheme: ColorScheme) => void
     systemTheme: "dark" | "light"
     particleEffects: boolean
     setParticleEffects: (enabled: boolean) => void
@@ -25,23 +22,12 @@ interface ThemeProviderState {
     setBlurEffects: (enabled: boolean) => void
     animations: boolean
     setAnimations: (enabled: boolean) => void
-    compactMode: boolean
-    setCompactMode: (enabled: boolean) => void
-    persistentSidebar: boolean
-    setPersistentSidebar: (enabled: boolean) => void
-    fontFamily: string
-    setFontFamily: (font: string) => void
-    fontSize: string
-    setFontSize: (size: string) => void
     reducedMotion: boolean
-    setReducedMotion: (enabled: boolean) => void
 }
 
 const initialState: ThemeProviderState = {
     theme: "dark",
-    colorScheme: "cosmic-indigo",
     setTheme: () => null,
-    setColorScheme: () => null,
     systemTheme: "dark",
     particleEffects: true,
     setParticleEffects: () => null,
@@ -49,16 +35,7 @@ const initialState: ThemeProviderState = {
     setBlurEffects: () => null,
     animations: true,
     setAnimations: () => null,
-    compactMode: false,
-    setCompactMode: () => null,
-    persistentSidebar: true,
-    setPersistentSidebar: () => null,
-    fontFamily: "inter",
-    setFontFamily: () => null,
-    fontSize: "medium",
-    setFontSize: () => null,
     reducedMotion: false,
-    setReducedMotion: () => null,
 }
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
@@ -66,48 +43,45 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 export function ThemeProvider({
     children,
     defaultTheme = "dark",
-    defaultColorScheme = "cosmic-indigo",
     storageKey = "exohabit-theme",
     ...props
 }: ThemeProviderProps) {
+    const { toast } = useToast()
     const [theme, setTheme] = useState<Theme>(defaultTheme)
-    const [colorScheme, setColorScheme] = useState<ColorScheme>(defaultColorScheme)
     const [systemTheme, setSystemTheme] = useState<"dark" | "light">("dark")
     const [particleEffects, setParticleEffects] = useState<boolean>(true)
     const [blurEffects, setBlurEffects] = useState<boolean>(true)
     const [animations, setAnimations] = useState<boolean>(true)
-    const [compactMode, setCompactMode] = useState<boolean>(false)
-    const [persistentSidebar, setPersistentSidebar] = useState<boolean>(true)
-    const [fontFamily, setFontFamily] = useState<string>("inter")
-    const [fontSize, setFontSize] = useState<string>("medium")
     const [reducedMotion, setReducedMotion] = useState<boolean>(false)
 
+    // Check for stored preferences on mount
     useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const root = window.document.documentElement;
+        const loadLocalSettings = () => {
+            // Load saved preferences from localStorage
+            const savedTheme = localStorage.getItem(`${storageKey}-theme`) as Theme | null
+            const savedParticleEffects = localStorage.getItem(`${storageKey}-particleEffects`)
+            const savedBlurEffects = localStorage.getItem(`${storageKey}-blurEffects`)
+            const savedAnimations = localStorage.getItem(`${storageKey}-animations`)
 
-        // Load saved preferences from localStorage
-        const savedTheme = localStorage.getItem(`${storageKey}-theme`) as Theme | null
-        const savedColorScheme = localStorage.getItem(`${storageKey}-colorScheme`) as ColorScheme | null
-        const savedParticleEffects = localStorage.getItem(`${storageKey}-particleEffects`)
-        const savedBlurEffects = localStorage.getItem(`${storageKey}-blurEffects`)
-        const savedAnimations = localStorage.getItem(`${storageKey}-animations`)
-        const savedCompactMode = localStorage.getItem(`${storageKey}-compactMode`)
-        const savedPersistentSidebar = localStorage.getItem(`${storageKey}-persistentSidebar`)
-        const savedFontFamily = localStorage.getItem(`${storageKey}-fontFamily`)
-        const savedFontSize = localStorage.getItem(`${storageKey}-fontSize`)
+            if (savedTheme) setTheme(savedTheme)
+            if (savedParticleEffects !== null) setParticleEffects(savedParticleEffects === "true")
+            if (savedBlurEffects !== null) setBlurEffects(savedBlurEffects === "true")
+            if (savedAnimations !== null) setAnimations(savedAnimations === "true")
+        }
 
-        if (savedTheme) setTheme(savedTheme)
-        if (savedColorScheme) setColorScheme(savedColorScheme)
-        if (savedParticleEffects !== null) setParticleEffects(savedParticleEffects === "true")
-        if (savedBlurEffects !== null) setBlurEffects(savedBlurEffects === "true")
-        if (savedAnimations !== null) setAnimations(savedAnimations === "true")
-        if (savedCompactMode !== null) setCompactMode(savedCompactMode === "true")
-        if (savedPersistentSidebar !== null) setPersistentSidebar(savedPersistentSidebar === "true")
-        if (savedFontFamily) setFontFamily(savedFontFamily)
-        if (savedFontSize) setFontSize(savedFontSize)
+        loadLocalSettings()
+    }, [storageKey])
 
-        // Check for system theme preference
+    // Save settings whenever they change
+    useEffect(() => {
+        localStorage.setItem(`${storageKey}-theme`, theme)
+        localStorage.setItem(`${storageKey}-particleEffects`, String(particleEffects))
+        localStorage.setItem(`${storageKey}-blurEffects`, String(blurEffects))
+        localStorage.setItem(`${storageKey}-animations`, String(animations))
+    }, [theme, particleEffects, blurEffects, animations, storageKey])
+
+    // Check for system theme preference
+    useEffect(() => {
         const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
         setSystemTheme(mediaQuery.matches ? "dark" : "light")
 
@@ -117,77 +91,82 @@ export function ThemeProvider({
 
         mediaQuery.addEventListener("change", onMediaChange)
 
+        // Check for reduced motion preference
+        const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
+        setReducedMotion(motionQuery.matches)
+
+        const onMotionChange = (e: MediaQueryListEvent) => {
+            setReducedMotion(e.matches)
+        }
+
+        motionQuery.addEventListener("change", onMotionChange)
+
         return () => {
             mediaQuery.removeEventListener("change", onMediaChange)
+            motionQuery.removeEventListener("change", onMotionChange)
         }
-    }, [storageKey])
+    }, [])
 
+    // Apply theme class to document
     useEffect(() => {
         const root = window.document.documentElement
         const isDark = theme === "dark" || (theme === "system" && systemTheme === "dark")
 
-        // Apply theme class
         root.classList.remove("light", "dark")
         root.classList.add(isDark ? "dark" : "light")
-
-        // Apply color scheme
-        root.style.setProperty("--color-scheme", colorScheme)
-
-        // Apply font family
-        root.style.setProperty("--font-family", fontFamily)
-
-        // Apply font size
-        root.style.setProperty("--font-size", fontSize === "small" ? "0.875" : fontSize === "large" ? "1.125" : "1")
-
-        // Apply compact mode
-        root.style.setProperty("--spacing-multiplier", compactMode ? "0.75" : "1")
-
-        // Save preferences to localStorage
-        localStorage.setItem(`${storageKey}-theme`, theme)
-        localStorage.setItem(`${storageKey}-colorScheme`, colorScheme)
-        localStorage.setItem(`${storageKey}-particleEffects`, String(particleEffects))
-        localStorage.setItem(`${storageKey}-blurEffects`, String(blurEffects))
-        localStorage.setItem(`${storageKey}-animations`, String(animations))
-        localStorage.setItem(`${storageKey}-compactMode`, String(compactMode))
-        localStorage.setItem(`${storageKey}-persistentSidebar`, String(persistentSidebar))
-        localStorage.setItem(`${storageKey}-fontFamily`, fontFamily)
-        localStorage.setItem(`${storageKey}-fontSize`, fontSize)
-    }, [
-        theme,
-        colorScheme,
-        systemTheme,
-        storageKey,
-        particleEffects,
-        blurEffects,
-        animations,
-        compactMode,
-        persistentSidebar,
-        fontFamily,
-        fontSize,
-    ])
+    }, [theme, systemTheme])
 
     const value = {
         theme,
-        colorScheme,
-        setTheme,
-        setColorScheme,
+        setTheme: (theme: Theme) => {
+            setTheme(theme)
+            try {
+                toast({
+                    title: "Theme changed",
+                    description: `Theme set to ${theme === "system" ? "system default" : theme}`,
+                })
+            } catch (e) {
+                console.error("Toast error:", e)
+            }
+        },
         systemTheme,
         particleEffects,
-        setParticleEffects,
+        setParticleEffects: (enabled: boolean) => {
+            setParticleEffects(enabled)
+            try {
+                toast({
+                    title: "Visual effects updated",
+                    description: `Particle effects ${enabled ? "enabled" : "disabled"}`,
+                })
+            } catch (e) {
+                console.error("Toast error:", e)
+            }
+        },
         blurEffects,
-        setBlurEffects,
+        setBlurEffects: (enabled: boolean) => {
+            setBlurEffects(enabled)
+            try {
+                toast({
+                    title: "Visual effects updated",
+                    description: `Blur effects ${enabled ? "enabled" : "disabled"}`,
+                })
+            } catch (e) {
+                console.error("Toast error:", e)
+            }
+        },
         animations,
-        setAnimations,
-        compactMode,
-        setCompactMode,
-        persistentSidebar,
-        setPersistentSidebar,
-        fontFamily,
-        setFontFamily,
-        fontSize,
-        setFontSize,
+        setAnimations: (enabled: boolean) => {
+            setAnimations(enabled)
+            try {
+                toast({
+                    title: "Visual effects updated",
+                    description: `Animations ${enabled ? "enabled" : "disabled"}`,
+                })
+            } catch (e) {
+                console.error("Toast error:", e)
+            }
+        },
         reducedMotion,
-        setReducedMotion,
     }
 
     return (
@@ -204,3 +183,4 @@ export const useTheme = () => {
 
     return context
 }
+

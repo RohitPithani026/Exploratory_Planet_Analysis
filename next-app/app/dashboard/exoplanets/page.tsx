@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -78,7 +78,9 @@ export default function ExoplanetsPage() {
     const { particleEffects, blurEffects, animations } = useTheme()
     const { data: session } = useSession()
     const [theme, setTheme] = useState<"light" | "dark">("dark")
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const { toast } = useToast()
+    const containerRef = useRef<HTMLDivElement>(null)
 
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light"
@@ -126,6 +128,23 @@ export default function ExoplanetsPage() {
         }
     }
 
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect()
+                setMousePosition({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top,
+                })
+            }
+        }
+
+        window.addEventListener("mousemove", handleMouseMove)
+
+        return () => {
+            window.removeEventListener("mousemove", handleMouseMove)
+        }
+    }, [toast])
 
     useEffect(() => {
         fetchExoplanets(pagination.page, pagination.pageSize)
@@ -263,599 +282,606 @@ export default function ExoplanetsPage() {
     }
 
     return (
-        <div className="relative min-h-screen bg-[#030014]">
-            {particleEffects && (
-                <>
-                    <SpaceBackground />
-                    <ParticleBackground />
-                </>
-            )}
+        <div className={theme === "dark" ? "dark" : ""} ref={containerRef}>
+            <div className="relative min-h-screen bg-[#030014]">
+                {particleEffects && <ParticleBackground />}
+                {particleEffects && <SpaceBackground />}
 
-            <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-                <motion.div
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.5 }}
-                    className="container flex h-16 items-center justify-between p-8"
-                >
-                    <div className="flex items-center gap-2 md:gap-4">
-                        <Link href="/dashboard" className="flex items-center gap-2 group">
-                            <div className="relative">
-                                <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur group-hover:opacity-100 transition-opacity duration-300"></div>
-                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black">
-                                    <Globe className="h-5 w-5 text-indigo-400" />
-                                </div>
-                            </div>
-                            <span className="bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-xl font-bold text-transparent hidden md:inline">
-                                ExoHabit
-                            </span>
-                        </Link>
-                        <nav className="hidden md:flex items-center gap-6 text-sm">
-                            <Link
-                                href="/dashboard"
-                                className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                            >
-                                Dashboard
-                                <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                            </Link>
-                            <Link
-                                href="/dashboard/exoplanets"
-                                className="font-medium text-white transition-colors hover:text-indigo-300 relative group"
-                            >
-                                Exoplanets
-                                <span className="absolute -bottom-1 left-0 h-0.5 w-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"></span>
-                            </Link>
-                            <Link
-                                href="/dashboard/profile"
-                                className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                            >
-                                Profile
-                                <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                            </Link>
-                        </nav>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={toggleTheme}
-                            className="text-white hover:bg-white/10 relative group"
-                        >
-                            <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                            <span className="sr-only">Toggle theme</span>
-                        </Button>
+                {animations && (
+                    <div
+                        className="pointer-events-none absolute inset-0 z-30 opacity-70"
+                        style={{
+                            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.15), transparent 25%)`,
+                        }}
+                    />
+                )}
 
-                        <HoverCard>
-                            <HoverCardTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
-                                >
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
-                                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                            {session?.user?.fullName?.charAt(0) || "U"}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </Button>
-                            </HoverCardTrigger>
-                            <HoverCardContent
-                                className={`w-80 border-white/10 bg-black/80 text-white ${blurEffects ? "backdrop-blur-xl" : ""}`}
-                            >
-                                <div className="flex justify-between space-x-4">
-                                    <Avatar className="h-12 w-12">
-                                        <AvatarImage src={session?.user?.image || "/placeholder.svg?height=48&width=48"} />
-                                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                            {session?.user?.fullName?.charAt(0) || "U"}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="space-y-1 flex-1">
-                                        <h4 className="text-sm font-semibold">{session?.user?.fullName || "John Doe"}</h4>
-                                        <p className="text-xs text-white/60">{session?.user?.email || "Exoplanet Researcher"}</p>
-                                        <div className="flex items-center pt-2">
-                                            <Link
-                                                href="/dashboard/profile"
-                                                className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center"
-                                            >
-                                                View profile <ChevronRight className="h-3 w-3 ml-1" />
-                                            </Link>
-                                        </div>
+                <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
+                    <motion.div
+                        initial={{ y: -20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ duration: 0.5 }}
+                        className="container flex h-16 items-center justify-between p-8"
+                    >
+                        <div className="flex items-center gap-2 md:gap-4">
+                            <Link href="/dashboard" className="flex items-center gap-2 group">
+                                <div className="relative">
+                                    <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black">
+                                        <Globe className="h-5 w-5 text-indigo-400" />
                                     </div>
                                 </div>
-                            </HoverCardContent>
-                        </HoverCard>
-                    </div>
-                </motion.div>
-            </header>
+                                <span className="bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-xl font-bold text-transparent hidden md:inline">
+                                    ExoHabit
+                                </span>
+                            </Link>
+                            <nav className="hidden md:flex items-center gap-6 text-sm">
+                                <Link
+                                    href="/dashboard"
+                                    className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
+                                >
+                                    Dashboard
+                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
+                                </Link>
+                                <Link
+                                    href="/dashboard/exoplanets"
+                                    className="font-medium text-white transition-colors hover:text-indigo-300 relative group"
+                                >
+                                    Exoplanets
+                                    <span className="absolute -bottom-1 left-0 h-0.5 w-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"></span>
+                                </Link>
+                                <Link
+                                    href="/dashboard/profile"
+                                    className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
+                                >
+                                    Profile
+                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
+                                </Link>
+                            </nav>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={toggleTheme}
+                                className="text-white hover:bg-white/10 relative group"
+                            >
+                                <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                                <span className="sr-only">Toggle theme</span>
+                            </Button>
 
-            <div className="container py-6 space-y-8 relative z-10 pr-8 pl-8">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-white">Exoplanets</h1>
-                        <p className="text-white/60">Exploring {pagination.totalItems.toLocaleString()} exoplanets from NASA&apos;s Exoplanet Archive</p>
-                    </div>
+                            <HoverCard>
+                                <HoverCardTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
+                                    >
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
+                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                                                {session?.user?.fullName?.charAt(0) || "U"}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </HoverCardTrigger>
+                                <HoverCardContent
+                                    className={`w-80 border-white/10 bg-black/80 text-white ${blurEffects ? "backdrop-blur-xl" : ""}`}
+                                >
+                                    <div className="flex justify-between space-x-4">
+                                        <Avatar className="h-12 w-12">
+                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=48&width=48"} />
+                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                                                {session?.user?.fullName?.charAt(0) || "U"}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="space-y-1 flex-1">
+                                            <h4 className="text-sm font-semibold">{session?.user?.fullName || "John Doe"}</h4>
+                                            <p className="text-xs text-white/60">{session?.user?.email || "Exoplanet Researcher"}</p>
+                                            <div className="flex items-center pt-2">
+                                                <Link
+                                                    href="/dashboard/profile"
+                                                    className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center"
+                                                >
+                                                    View profile <ChevronRight className="h-3 w-3 ml-1" />
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </HoverCardContent>
+                            </HoverCard>
+                        </div>
+                    </motion.div>
+                </header>
 
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/50" />
-                            <Input
-                                type="search"
-                                placeholder="Search planets..."
-                                className="w-full sm:w-[500px] bg-white/5 border-white/10 pl-8 text-white placeholder:text-white/50"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
+                <div className="container py-6 space-y-8 relative z-10 pr-8 pl-8">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight text-white">Exoplanets</h1>
+                            <p className="text-white/60">Exploring {pagination.totalItems.toLocaleString()} exoplanets from NASA&apos;s Exoplanet Archive</p>
                         </div>
 
-                        <Button
-                            variant="outline"
-                            className="border-white/10 bg-white/5 text-white hover:bg-white/10"
-                            onClick={() => {
-                                setSortBy(null)
-                                setSearchQuery("")
-                            }}
-                        >
-                            <RefreshCw className="mr-2 h-4 w-4" />
-                            Reset Filters
-                        </Button>
-                    </div>
-                </div>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="relative">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/50" />
+                                <Input
+                                    type="search"
+                                    placeholder="Search planets..."
+                                    className="w-full sm:w-[500px] bg-white/5 border-white/10 pl-8 text-white placeholder:text-white/50"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
 
-                {/* Page size selector */}
-                <div className="flex justify-end mb-4">
-                    <div className="flex items-center gap-2">
-                        <label htmlFor="pageSize" className="text-sm text-white/80">
-                            Planets per page:
-                        </label>
-                        <select
-                            id="pageSize"
-                            className="border border-white/20 rounded p-[2px] px-3 bg-[#111111] text-white/80 text-sm hover:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-white/40"
-                            value={pagination.pageSize}
-                            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                            disabled={isLoading}
-                        >
-                            {[10, 20, 50, 100].map((size) => (
-                                <option key={size} value={size} className="text-sm">
-                                    {size}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <Tabs defaultValue="all" className="space-y-6">
-                    <TabsList className="bg-white/5 border border-white/10 p-0.5">
-                        <TabsTrigger
-                            value="all"
-                            className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70"
-                        >
-                            All Planets
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="habitable"
-                            className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70"
-                        >
-                            Potentially Habitable
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="earth-like"
-                            className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70"
-                        >
-                            Earth-like
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        <Badge
-                            variant="outline"
-                            className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_rade" ? "bg-[#121217] text-white" : "bg-transparent"}`}
-                            onClick={() => handleSort("pl_rade")}
-                        >
-                            <Ruler className="h-2 w-2" />
-                            Radius {sortBy === "pl_rade" && (sortOrder === "asc" ? "↑" : "↓")}
-                        </Badge>
-                        <Badge
-                            variant="outline"
-                            className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_bmasse" ? "bg-[#121217] text-white" : "bg-transparent"}`}
-                            onClick={() => handleSort("pl_bmasse")}
-                        >
-                            <Scale className="h-2 w-2" />
-                            Mass {sortBy === "pl_bmasse" && (sortOrder === "asc" ? "↑" : "↓")}
-                        </Badge>
-                        <Badge
-                            variant="outline"
-                            className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_orbper" ? "bg-[#121217] text-white" : "bg-transparent"}`}
-                            onClick={() => handleSort("pl_orbper")}
-                        >
-                            <ArrowUpDown className="h-2 w-2" />
-                            Orbital Period {sortBy === "pl_orbper" && (sortOrder === "asc" ? "↑" : "↓")}
-                        </Badge>
-                        <Badge
-                            variant="outline"
-                            className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_eqt" ? "bg-[#121217] text-white" : "bg-transparent"}`}
-                            onClick={() => handleSort("pl_eqt")}
-                        >
-                            <Thermometer className="h-2 w-2" />
-                            Temperature {sortBy === "pl_eqt" && (sortOrder === "asc" ? "↑" : "↓")}
-                        </Badge>
+                            <Button
+                                variant="outline"
+                                className="border-white/10 bg-white/5 text-white hover:bg-white/10"
+                                onClick={() => {
+                                    setSortBy(null)
+                                    setSearchQuery("")
+                                }}
+                            >
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Reset Filters
+                            </Button>
+                        </div>
                     </div>
 
-
-                    <TabsContent value="all" className="mt-0">
-                        {isLoading ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {Array.from({ length: 12 }).map((_, i) => (
-                                    <Card key={i} className="bg-black/40 border-white/10">
-                                        <CardHeader className="pb-2">
-                                            <Skeleton className="h-4 w-3/4 bg-white/5" />
-                                            <Skeleton className="h-3 w-1/2 bg-white/5 mt-2" />
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                            <Skeleton className="h-3 w-full bg-white/5" />
-                                            <Skeleton className="h-3 w-full bg-white/5" />
-                                            <Skeleton className="h-3 w-3/4 bg-white/5" />
-                                        </CardContent>
-                                        <CardFooter>
-                                            <Skeleton className="h-8 w-full bg-white/5" />
-                                        </CardFooter>
-                                    </Card>
+                    {/* Page size selector */}
+                    <div className="flex justify-end mb-4">
+                        <div className="flex items-center gap-2">
+                            <label htmlFor="pageSize" className="text-sm text-white/80">
+                                Planets per page:
+                            </label>
+                            <select
+                                id="pageSize"
+                                className="border border-white/20 rounded p-[2px] px-3 bg-[#111111] text-white/80 text-sm hover:bg-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-white/40"
+                                value={pagination.pageSize}
+                                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                                disabled={isLoading}
+                            >
+                                {[10, 20, 50, 100].map((size) => (
+                                    <option key={size} value={size} className="text-sm">
+                                        {size}
+                                    </option>
                                 ))}
-                            </div>
-                        ) : filteredPlanets.length === 0 ? (
-                            <div className="text-center py-12">
-                                <Globe className="mx-auto h-12 w-12 text-white/20" />
-                                <h3 className="mt-4 text-lg font-medium text-white">No planets found</h3>
-                                <p className="mt-2 text-white/60">Try adjusting your search or filters</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {filteredPlanets.map((planet, index) => {
-                                    const habitabilityScore = getHabitabilityScore(planet)
-                                    const planetType = getPlanetType(planet)
-                                    const starType = getStarType(planet)
-
-                                    return (
-                                        <motion.div
-                                            key={planet.pl_name}
-                                            initial={animations ? { opacity: 0, y: 20 } : false}
-                                            animate={animations ? { opacity: 1, y: 0 } : {}}
-                                            transition={{ duration: 0.3, delay: index * 0.05 }}
-                                        >
-                                            <Card
-                                                className={`bg-black/40 border-white/10 text-white overflow-hidden ${blurEffects ? "backdrop-blur-sm" : ""} h-full flex flex-col`}
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-purple-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                                                <CardHeader className="pb-2 relative z-10">
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <CardTitle className="text-lg font-bold text-white">{planet.pl_name}</CardTitle>
-                                                            <CardDescription className="text-white/60">{starType} Star System</CardDescription>
-                                                        </div>
-                                                        <Badge className={getBadgeColor(planetType)}>{planetType}</Badge>
-                                                    </div>
-                                                </CardHeader>
-
-                                                <CardContent className="space-y-4 flex-grow relative z-10">
-                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Radius</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_rade !== null ? `${planet.pl_rade.toFixed(2)} R⊕` : "Unknown"}
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Mass</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_bmasse !== null ? `${planet.pl_bmasse.toFixed(2)} M⊕` : "Unknown"}
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Orbital Period</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_orbper !== null ? `${planet.pl_orbper.toFixed(1)} days` : "Unknown"}
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Temperature</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_eqt !== null ? `${planet.pl_eqt.toFixed(0)} K` : "Unknown"}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="pt-2">
-                                                        <div className="flex justify-between items-center mb-1">
-                                                            <span className="text-xs text-white/70">Habitability Score</span>
-                                                            <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore)}`}>
-                                                                {(habitabilityScore * 100).toFixed(0)}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                                            <motion.div
-                                                                initial={{ width: 0 }}
-                                                                animate={{ width: `${habitabilityScore * 100}%` }}
-                                                                transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
-                                                                className={`h-full rounded-full ${habitabilityScore > 0.8
-                                                                    ? "bg-green-500"
-                                                                    : habitabilityScore > 0.6
-                                                                        ? "bg-blue-500"
-                                                                        : habitabilityScore > 0.4
-                                                                            ? "bg-yellow-500"
-                                                                            : habitabilityScore > 0.2
-                                                                                ? "bg-orange-500"
-                                                                                : "bg-red-500"
-                                                                    }`}
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </CardContent>
-
-                                                <CardFooter className="relative z-10">
-                                                    <Button
-                                                        variant="outline"
-                                                        className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
-                                                    >
-                                                        <Star className="mr-2 h-4 w-4" />
-                                                        View Details
-                                                    </Button>
-                                                </CardFooter>
-                                            </Card>
-                                        </motion.div>
-                                    )
-                                })}
-                            </div>
-                        )}
-                    </TabsContent>
-
-                    <TabsContent value="habitable" className="mt-0">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {filteredPlanets
-                                .filter((planet) => getHabitabilityScore(planet) > 0.6)
-                                .map((planet, index) => {
-                                    const habitabilityScore = getHabitabilityScore(planet)
-                                    const planetType = getPlanetType(planet)
-                                    const starType = getStarType(planet)
-
-                                    return (
-                                        <motion.div
-                                            key={planet.pl_name}
-                                            initial={animations ? { opacity: 0, y: 20 } : false}
-                                            animate={animations ? { opacity: 1, y: 0 } : {}}
-                                            transition={{ duration: 0.3, delay: index * 0.05 }}
-                                        >
-                                            <Card className={`bg-black/40 border-white/10 text-white overflow-hidden ${blurEffects ? 'backdrop-blur-sm' : ''} h-full flex flex-col`}>
-                                                <div className="absolute inset-0 bg-gradient-to-br from-green-900/10 via-blue-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                                                <CardHeader className="pb-2 relative z-10">
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <CardTitle className="text-lg font-bold text-white">{planet.pl_name}</CardTitle>
-                                                            <CardDescription className="text-white/60">
-                                                                {starType} Star System
-                                                            </CardDescription>
-                                                        </div>
-                                                        <Badge className={getBadgeColor(planetType)}>
-                                                            {planetType}
-                                                        </Badge>
-                                                    </div>
-                                                </CardHeader>
-
-                                                <CardContent className="space-y-4 flex-grow relative z-10">
-                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Radius</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_rade !== null ? `${planet.pl_rade.toFixed(2)} R⊕` : 'Unknown'}
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Mass</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_bmasse !== null ? `${planet.pl_bmasse.toFixed(2)} M⊕` : 'Unknown'}
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Orbital Period</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_orbper !== null ? `${planet.pl_orbper.toFixed(1)} days` : 'Unknown'}
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Temperature</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_eqt !== null ? `${planet.pl_eqt.toFixed(0)} K` : 'Unknown'}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="pt-2">
-                                                        <div className="flex justify-between items-center mb-1">
-                                                            <span className="text-xs text-white/70">Habitability Score</span>
-                                                            <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore)}`}>
-                                                                {(habitabilityScore * 100).toFixed(0)}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                                            <motion.div
-                                                                initial={{ width: 0 }}
-                                                                animate={{ width: `${habitabilityScore * 100}%` }}
-                                                                transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
-                                                                className="h-full rounded-full bg-green-500"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </CardContent>
-
-                                                <CardFooter className="relative z-10">
-                                                    <Button
-                                                        variant="outline"
-                                                        className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
-                                                    >
-                                                        <Star className="mr-2 h-4 w-4" />
-                                                        View Details
-                                                    </Button>
-                                                </CardFooter>
-
-                                            </Card>
-                                        </motion.div>
-                                    )
-                                })}
+                            </select>
                         </div>
-                    </TabsContent>
-
-                    <TabsContent value="earth-like" className="mt-0">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {filteredPlanets
-                                .filter((planet) => getPlanetType(planet) === "Earth-like")
-                                .map((planet, index) => {
-                                    const habitabilityScore = getHabitabilityScore(planet)
-                                    const planetType = getPlanetType(planet)
-                                    const starType = getStarType(planet)
-
-                                    return (
-                                        <motion.div
-                                            key={planet.pl_name}
-                                            initial={animations ? { opacity: 0, y: 20 } : false}
-                                            animate={animations ? { opacity: 1, y: 0 } : {}}
-                                            transition={{ duration: 0.3, delay: index * 0.05 }}
-                                        >
-                                            <Card
-                                                className={`bg-black/40 border-white/10 text-white overflow-hidden ${blurEffects ? "backdrop-blur-sm" : ""} h-full flex flex-col`}
-                                            >
-                                                <div className="absolute inset-0 bg-gradient-to-br from-green-900/10 via-blue-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                                                <CardHeader className="pb-2 relative z-10">
-                                                    <div className="flex justify-between items-start">
-                                                        <div>
-                                                            <CardTitle className="text-lg font-bold text-white">{planet.pl_name}</CardTitle>
-                                                            <CardDescription className="text-white/60">{starType} Star System</CardDescription>
-                                                        </div>
-                                                        <Badge className={getBadgeColor(planetType)}>{planetType}</Badge>
-                                                    </div>
-                                                </CardHeader>
-
-                                                <CardContent className="space-y-4 flex-grow relative z-10">
-                                                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Radius</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_rade !== null ? `${planet.pl_rade.toFixed(2)} R⊕` : "Unknown"}
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Mass</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_bmasse !== null ? `${planet.pl_bmasse.toFixed(2)} M⊕` : "Unknown"}
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Orbital Period</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_orbper !== null ? `${planet.pl_orbper.toFixed(1)} days` : "Unknown"}
-                                                            </p>
-                                                        </div>
-                                                        <div className="space-y-1">
-                                                            <p className="text-white/50">Temperature</p>
-                                                            <p className="font-medium">
-                                                                {planet.pl_eqt !== null ? `${planet.pl_eqt.toFixed(0)} K` : "Unknown"}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="pt-2">
-                                                        <div className="flex justify-between items-center mb-1">
-                                                            <span className="text-xs text-white/70">Habitability Score</span>
-                                                            <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore)}`}>
-                                                                {(habitabilityScore * 100).toFixed(0)}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                                            <motion.div
-                                                                initial={{ width: 0 }}
-                                                                animate={{ width: `${habitabilityScore * 100}%` }}
-                                                                transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
-                                                                className="h-full rounded-full bg-green-500"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </CardContent>
-
-                                                <CardFooter className="relative z-10">
-                                                    <Button
-                                                        variant="outline"
-                                                        className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
-                                                    >
-                                                        <Star className="mr-2 h-4 w-4" />
-                                                        View Details
-                                                    </Button>
-                                                </CardFooter>
-                                            </Card>
-                                        </motion.div>
-                                    )
-                                })}
-                        </div>
-                    </TabsContent>
-                </Tabs>
-
-                {/* Pagination controls */}
-                <div className="flex items-center justify-between">
-                    <div className="text-sm text-white/100">
-                        Showing {pagination.totalItems > 0 ? (pagination.page - 1) * pagination.pageSize + 1 : 0} to{" "}
-                        {Math.min(pagination.page * pagination.pageSize, pagination.totalItems)} of{" "}
-                        {pagination.totalItems.toLocaleString()} planets
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
-                            onClick={() => handlePageChange(1)}
-                            disabled={!pagination.hasPrevPage || isLoading}
-                        >
-                            <ChevronsLeft className="h-4 w-4" />
-                        </Button>
+                    <Tabs defaultValue="all" className="space-y-6">
+                        <TabsList className="bg-white/5 border border-white/10 p-0.5">
+                            <TabsTrigger
+                                value="all"
+                                className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70"
+                            >
+                                All Planets
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="habitable"
+                                className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70"
+                            >
+                                Potentially Habitable
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="earth-like"
+                                className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70"
+                            >
+                                Earth-like
+                            </TabsTrigger>
+                        </TabsList>
 
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
-                            onClick={() => handlePageChange(pagination.page - 1)}
-                            disabled={!pagination.hasPrevPage || isLoading}
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            <Badge
+                                variant="outline"
+                                className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_rade" ? "bg-[#121217] text-white" : "bg-transparent"}`}
+                                onClick={() => handleSort("pl_rade")}
+                            >
+                                <Ruler className="h-2 w-2" />
+                                Radius {sortBy === "pl_rade" && (sortOrder === "asc" ? "↑" : "↓")}
+                            </Badge>
+                            <Badge
+                                variant="outline"
+                                className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_bmasse" ? "bg-[#121217] text-white" : "bg-transparent"}`}
+                                onClick={() => handleSort("pl_bmasse")}
+                            >
+                                <Scale className="h-2 w-2" />
+                                Mass {sortBy === "pl_bmasse" && (sortOrder === "asc" ? "↑" : "↓")}
+                            </Badge>
+                            <Badge
+                                variant="outline"
+                                className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_orbper" ? "bg-[#121217] text-white" : "bg-transparent"}`}
+                                onClick={() => handleSort("pl_orbper")}
+                            >
+                                <ArrowUpDown className="h-2 w-2" />
+                                Orbital Period {sortBy === "pl_orbper" && (sortOrder === "asc" ? "↑" : "↓")}
+                            </Badge>
+                            <Badge
+                                variant="outline"
+                                className={`cursor-pointer rounded-full border border-white/20 text-white/100 px-4 py-2 flex items-center gap-1 ${sortBy === "pl_eqt" ? "bg-[#121217] text-white" : "bg-transparent"}`}
+                                onClick={() => handleSort("pl_eqt")}
+                            >
+                                <Thermometer className="h-2 w-2" />
+                                Temperature {sortBy === "pl_eqt" && (sortOrder === "asc" ? "↑" : "↓")}
+                            </Badge>
+                        </div>
 
-                        <span className="px-4 py-2 border border-white/20 rounded-md text-white/90 text-sm bg-[#111111]">
-                            {pagination.page} / {pagination.totalPages}
-                        </span>
 
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
-                            onClick={() => handlePageChange(pagination.page + 1)}
-                            disabled={!pagination.hasNextPage || isLoading}
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
+                        <TabsContent value="all" className="mt-0">
+                            {isLoading ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {Array.from({ length: 12 }).map((_, i) => (
+                                        <Card key={i} className="bg-black/40 border-white/10">
+                                            <CardHeader className="pb-2">
+                                                <Skeleton className="h-4 w-3/4 bg-white/5" />
+                                                <Skeleton className="h-3 w-1/2 bg-white/5 mt-2" />
+                                            </CardHeader>
+                                            <CardContent className="space-y-4">
+                                                <Skeleton className="h-3 w-full bg-white/5" />
+                                                <Skeleton className="h-3 w-full bg-white/5" />
+                                                <Skeleton className="h-3 w-3/4 bg-white/5" />
+                                            </CardContent>
+                                            <CardFooter>
+                                                <Skeleton className="h-8 w-full bg-white/5" />
+                                            </CardFooter>
+                                        </Card>
+                                    ))}
+                                </div>
+                            ) : filteredPlanets.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <Globe className="mx-auto h-12 w-12 text-white/20" />
+                                    <h3 className="mt-4 text-lg font-medium text-white">No planets found</h3>
+                                    <p className="mt-2 text-white/60">Try adjusting your search or filters</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {filteredPlanets.map((planet, index) => {
+                                        const habitabilityScore = getHabitabilityScore(planet)
+                                        const planetType = getPlanetType(planet)
+                                        const starType = getStarType(planet)
 
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
-                            onClick={() => handlePageChange(pagination.totalPages)}
-                            disabled={!pagination.hasNextPage || isLoading}
-                        >
-                            <ChevronsRight className="h-4 w-4" />
-                        </Button>
+                                        return (
+                                            <motion.div
+                                                key={planet.pl_name}
+                                                initial={animations ? { opacity: 0, y: 20 } : false}
+                                                animate={animations ? { opacity: 1, y: 0 } : {}}
+                                                transition={{ duration: 0.3, delay: index * 0.05 }}
+                                            >
+                                                <Card
+                                                    className={`bg-black/40 border-white/10 text-white overflow-hidden ${blurEffects ? "backdrop-blur-sm" : ""} h-full flex flex-col`}
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-purple-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                                                    <CardHeader className="pb-2 relative z-10">
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <CardTitle className="text-lg font-bold text-white">{planet.pl_name}</CardTitle>
+                                                                <CardDescription className="text-white/60">{starType} Star System</CardDescription>
+                                                            </div>
+                                                            <Badge className={getBadgeColor(planetType)}>{planetType}</Badge>
+                                                        </div>
+                                                    </CardHeader>
+
+                                                    <CardContent className="space-y-4 flex-grow relative z-10">
+                                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Radius</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_rade !== null ? `${planet.pl_rade.toFixed(2)} R⊕` : "Unknown"}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Mass</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_bmasse !== null ? `${planet.pl_bmasse.toFixed(2)} M⊕` : "Unknown"}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Orbital Period</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_orbper !== null ? `${planet.pl_orbper.toFixed(1)} days` : "Unknown"}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Temperature</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_eqt !== null ? `${planet.pl_eqt.toFixed(0)} K` : "Unknown"}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pt-2">
+                                                            <div className="flex justify-between items-center mb-1">
+                                                                <span className="text-xs text-white/70">Habitability Score</span>
+                                                                <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore)}`}>
+                                                                    {(habitabilityScore * 100).toFixed(0)}%
+                                                                </span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${habitabilityScore * 100}%` }}
+                                                                    transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
+                                                                    className={`h-full rounded-full ${habitabilityScore > 0.8
+                                                                        ? "bg-green-500"
+                                                                        : habitabilityScore > 0.6
+                                                                            ? "bg-blue-500"
+                                                                            : habitabilityScore > 0.4
+                                                                                ? "bg-yellow-500"
+                                                                                : habitabilityScore > 0.2
+                                                                                    ? "bg-orange-500"
+                                                                                    : "bg-red-500"
+                                                                        }`}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </CardContent>
+
+                                                    <CardFooter className="relative z-10">
+                                                        <Button
+                                                            variant="outline"
+                                                            className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                                                        >
+                                                            <Star className="mr-2 h-4 w-4" />
+                                                            View Details
+                                                        </Button>
+                                                    </CardFooter>
+                                                </Card>
+                                            </motion.div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                        </TabsContent>
+
+                        <TabsContent value="habitable" className="mt-0">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {filteredPlanets
+                                    .filter((planet) => getHabitabilityScore(planet) > 0.6)
+                                    .map((planet, index) => {
+                                        const habitabilityScore = getHabitabilityScore(planet)
+                                        const planetType = getPlanetType(planet)
+                                        const starType = getStarType(planet)
+
+                                        return (
+                                            <motion.div
+                                                key={planet.pl_name}
+                                                initial={animations ? { opacity: 0, y: 20 } : false}
+                                                animate={animations ? { opacity: 1, y: 0 } : {}}
+                                                transition={{ duration: 0.3, delay: index * 0.05 }}
+                                            >
+                                                <Card className={`bg-black/40 border-white/10 text-white overflow-hidden ${blurEffects ? 'backdrop-blur-sm' : ''} h-full flex flex-col`}>
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-green-900/10 via-blue-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                                                    <CardHeader className="pb-2 relative z-10">
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <CardTitle className="text-lg font-bold text-white">{planet.pl_name}</CardTitle>
+                                                                <CardDescription className="text-white/60">
+                                                                    {starType} Star System
+                                                                </CardDescription>
+                                                            </div>
+                                                            <Badge className={getBadgeColor(planetType)}>
+                                                                {planetType}
+                                                            </Badge>
+                                                        </div>
+                                                    </CardHeader>
+
+                                                    <CardContent className="space-y-4 flex-grow relative z-10">
+                                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Radius</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_rade !== null ? `${planet.pl_rade.toFixed(2)} R⊕` : 'Unknown'}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Mass</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_bmasse !== null ? `${planet.pl_bmasse.toFixed(2)} M⊕` : 'Unknown'}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Orbital Period</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_orbper !== null ? `${planet.pl_orbper.toFixed(1)} days` : 'Unknown'}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Temperature</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_eqt !== null ? `${planet.pl_eqt.toFixed(0)} K` : 'Unknown'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pt-2">
+                                                            <div className="flex justify-between items-center mb-1">
+                                                                <span className="text-xs text-white/70">Habitability Score</span>
+                                                                <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore)}`}>
+                                                                    {(habitabilityScore * 100).toFixed(0)}%
+                                                                </span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${habitabilityScore * 100}%` }}
+                                                                    transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
+                                                                    className="h-full rounded-full bg-green-500"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </CardContent>
+
+                                                    <CardFooter className="relative z-10">
+                                                        <Button
+                                                            variant="outline"
+                                                            className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                                                        >
+                                                            <Star className="mr-2 h-4 w-4" />
+                                                            View Details
+                                                        </Button>
+                                                    </CardFooter>
+
+                                                </Card>
+                                            </motion.div>
+                                        )
+                                    })}
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="earth-like" className="mt-0">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {filteredPlanets
+                                    .filter((planet) => getPlanetType(planet) === "Earth-like")
+                                    .map((planet, index) => {
+                                        const habitabilityScore = getHabitabilityScore(planet)
+                                        const planetType = getPlanetType(planet)
+                                        const starType = getStarType(planet)
+
+                                        return (
+                                            <motion.div
+                                                key={planet.pl_name}
+                                                initial={animations ? { opacity: 0, y: 20 } : false}
+                                                animate={animations ? { opacity: 1, y: 0 } : {}}
+                                                transition={{ duration: 0.3, delay: index * 0.05 }}
+                                            >
+                                                <Card
+                                                    className={`bg-black/40 border-white/10 text-white overflow-hidden ${blurEffects ? "backdrop-blur-sm" : ""} h-full flex flex-col`}
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-green-900/10 via-blue-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                                                    <CardHeader className="pb-2 relative z-10">
+                                                        <div className="flex justify-between items-start">
+                                                            <div>
+                                                                <CardTitle className="text-lg font-bold text-white">{planet.pl_name}</CardTitle>
+                                                                <CardDescription className="text-white/60">{starType} Star System</CardDescription>
+                                                            </div>
+                                                            <Badge className={getBadgeColor(planetType)}>{planetType}</Badge>
+                                                        </div>
+                                                    </CardHeader>
+
+                                                    <CardContent className="space-y-4 flex-grow relative z-10">
+                                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Radius</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_rade !== null ? `${planet.pl_rade.toFixed(2)} R⊕` : "Unknown"}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Mass</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_bmasse !== null ? `${planet.pl_bmasse.toFixed(2)} M⊕` : "Unknown"}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Orbital Period</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_orbper !== null ? `${planet.pl_orbper.toFixed(1)} days` : "Unknown"}
+                                                                </p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-white/50">Temperature</p>
+                                                                <p className="font-medium">
+                                                                    {planet.pl_eqt !== null ? `${planet.pl_eqt.toFixed(0)} K` : "Unknown"}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pt-2">
+                                                            <div className="flex justify-between items-center mb-1">
+                                                                <span className="text-xs text-white/70">Habitability Score</span>
+                                                                <span className={`text-xs font-medium ${getHabitabilityColor(habitabilityScore)}`}>
+                                                                    {(habitabilityScore * 100).toFixed(0)}%
+                                                                </span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${habitabilityScore * 100}%` }}
+                                                                    transition={{ duration: 1, delay: 0.2 + index * 0.05 }}
+                                                                    className="h-full rounded-full bg-green-500"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </CardContent>
+
+                                                    <CardFooter className="relative z-10">
+                                                        <Button
+                                                            variant="outline"
+                                                            className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                                                        >
+                                                            <Star className="mr-2 h-4 w-4" />
+                                                            View Details
+                                                        </Button>
+                                                    </CardFooter>
+                                                </Card>
+                                            </motion.div>
+                                        )
+                                    })}
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+
+                    {/* Pagination controls */}
+                    <div className="flex items-center justify-between">
+                        <div className="text-sm text-white/100">
+                            Showing {pagination.totalItems > 0 ? (pagination.page - 1) * pagination.pageSize + 1 : 0} to{" "}
+                            {Math.min(pagination.page * pagination.pageSize, pagination.totalItems)} of{" "}
+                            {pagination.totalItems.toLocaleString()} planets
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
+                                onClick={() => handlePageChange(1)}
+                                disabled={!pagination.hasPrevPage || isLoading}
+                            >
+                                <ChevronsLeft className="h-4 w-4" />
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
+                                onClick={() => handlePageChange(pagination.page - 1)}
+                                disabled={!pagination.hasPrevPage || isLoading}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+
+                            <span className="px-4 py-2 border border-white/20 rounded-md text-white/90 text-sm bg-[#111111]">
+                                {pagination.page} / {pagination.totalPages}
+                            </span>
+
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
+                                onClick={() => handlePageChange(pagination.page + 1)}
+                                disabled={!pagination.hasNextPage || isLoading}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-white/100 hover:bg-[#1a1a1a] border border-white/20 rounded-md"
+                                onClick={() => handlePageChange(pagination.totalPages)}
+                                disabled={!pagination.hasNextPage || isLoading}
+                            >
+                                <ChevronsRight className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div >
+            </div >
+        </div>
     )
 }
 
