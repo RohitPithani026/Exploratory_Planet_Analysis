@@ -4,19 +4,24 @@ import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
-    const protectedPaths = ["/dashboard", "/profile", "/dashboard/exoplanet"];
 
-    const isPathProtected = protectedPaths.some((path) => pathname.startsWith(path));
+    // Define protected and allowed paths
+    const protectedPaths = ["/dashboard", "/profile", "/dashboard/exoplanet/"];
+
+    const isPathProtected = protectedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
 
     if (isPathProtected) {
-        const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+        const token = await getToken({
+            req: request,
+            secret: process.env.NEXTAUTH_SECRET,
+        });
 
-        console.log("Path:", pathname);
-        console.log("Token:", token);
+        console.log("Token:", token); // Debugging
 
+        // Redirect to login if not authenticated
         if (!token) {
-            const url = new URL("/signin", request.nextUrl.origin);
-            url.searchParams.set("callbackUrl", request.nextUrl.pathname);
+            const url = new URL("/signin", request.url);
+            url.searchParams.set("callbackUrl", encodeURIComponent(pathname));
             return NextResponse.redirect(url);
         }
     }
@@ -27,8 +32,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         "/dashboard",
-        "/dashboard/:path*",
-        "/dashboard/exoplanet/:path*",
+        "/dashboard/:path",
+        "/dashboard/exoplanet/:path",
         "/profile",
         "/profile/:path*",
     ],
