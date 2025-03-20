@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
 
     // Define protected and allowed paths
     const protectedPaths = ["/dashboard", "/profile"];
-    const allowedPaths = ["/dashboard/exoplanet"]; // Allow direct access to exoplanet pages
+    const allowedPaths = ["/dashboard/exoplanet/:path"]; // Allow direct access to exoplanet pages
 
     const isPathProtected = protectedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
     const isAllowed = allowedPaths.some((path) => pathname.startsWith(path));
