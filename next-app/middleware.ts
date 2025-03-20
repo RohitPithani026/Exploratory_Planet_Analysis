@@ -4,26 +4,19 @@ import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+    const protectedPaths = ["/dashboard", "/profile", "/dashboard/exoplanet"];
 
-    // Define protected and allowed paths
-    const protectedPaths = ["/dashboard", "/profile"];
-    const allowedPaths = ["/dashboard/exoplanet/:path"]; // Allow direct access to exoplanet pages
+    const isPathProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
-    const isPathProtected = protectedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
-    const isAllowed = allowedPaths.some((path) => pathname.startsWith(path));
+    if (isPathProtected) {
+        const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-    if (isPathProtected && !isAllowed) {
-        const token = await getToken({
-            req: request,
-            secret: process.env.NEXTAUTH_SECRET,
-        });
+        console.log("Path:", pathname);
+        console.log("Token:", token);
 
-        console.log("Token:", token); // Debugging
-
-        // Redirect to login if not authenticated
         if (!token) {
-            const url = new URL("/signin", request.url);
-            url.searchParams.set("callbackUrl", encodeURIComponent(pathname));
+            const url = new URL("/signin", request.nextUrl.origin);
+            url.searchParams.set("callbackUrl", request.nextUrl.pathname);
             return NextResponse.redirect(url);
         }
     }
@@ -34,7 +27,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         "/dashboard",
-        "/dashboard/:path",
+        "/dashboard/:path*",
+        "/dashboard/exoplanet/:path*",
         "/profile",
         "/profile/:path*",
     ],

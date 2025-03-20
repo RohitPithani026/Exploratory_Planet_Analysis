@@ -891,15 +891,23 @@ export default function ExoplanetsPage() {
                                                     </CardContent>
 
                                                     <CardFooter className="relative z-10">
-                                                        <Link href={`/dashboard/exoplanet/${planet.pl_name?.replace(/\s+/g, '-').toLowerCase()}`} className="w-full">
-                                                            <Button
-                                                                variant="outline"
-                                                                className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
-                                                            >
-                                                                <Star className="mr-2 h-4 w-4" />
-                                                                View Details
-                                                            </Button>
-                                                        </Link>
+                                                        {session ? (
+                                                            <Link href={`/dashboard/exoplanet/${planet.pl_name?.replace(/\s+/g, '-').toLowerCase()}`} className="w-full">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                                                                >
+                                                                    <Star className="mr-2 h-4 w-4" />
+                                                                    View Details
+                                                                </Button>
+                                                            </Link>
+                                                        ) : (
+                                                            <Link href="/signin">
+                                                                <Button variant="outline" className="w-full text-white">
+                                                                    Sign in to View
+                                                                </Button>
+                                                            </Link>
+                                                        )}
                                                     </CardFooter>
                                                 </Card>
                                             </motion.div>
