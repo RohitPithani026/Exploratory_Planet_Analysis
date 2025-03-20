@@ -41,7 +41,7 @@ interface ExoplanetData {
 }
 
 export default function ExoplanetDetailsPage() {
-    const { pl_name } = useParams<{ pl_name: string }>()
+    //const { pl_name } = useParams<{ pl_name: string }>()
     const router = useRouter()
     const { animations, particleEffects } = useTheme()
     const { toast } = useToast()
@@ -52,6 +52,8 @@ export default function ExoplanetDetailsPage() {
     const containerRef = useRef<HTMLDivElement>(null)
     const [theme, setTheme] = useState<"light" | "dark">("dark")
 
+    const { pl_name } = router.query;
+    
     // Sample images for the carousel - in a real app, these would be specific to the exoplanet
     const exoplanetImages = useMemo(
         () => [
