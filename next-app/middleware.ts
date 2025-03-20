@@ -4,28 +4,23 @@ import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-    // Define protected and allowed paths
-    const protectedPaths = ["/dashboard", "/profile", "/dashboard/exoplanet/"];
+    console.log("Middleware Executed:");
+    console.log("Path:", pathname);
+    console.log("Token:", token);
 
-    const isPathProtected = protectedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+    const protectedPaths = ["/dashboard", "/profile", "/dashboard/exoplanet"];
+    const isPathProtected = protectedPaths.some((path) => pathname.startsWith(path));
 
-    if (isPathProtected) {
-        const token = await getToken({
-            req: request,
-            secret: process.env.NEXTAUTH_SECRET,
-        });
-
-        console.log("Token:", token); // Debugging
-
-        // Redirect to login if not authenticated
-        if (!token) {
-            const url = new URL("/signin", request.url);
-            url.searchParams.set("callbackUrl", encodeURIComponent(pathname));
-            return NextResponse.redirect(url);
-        }
+    if (isPathProtected && !token) {
+        console.log("❌ Redirecting to /signin due to missing token");
+        const url = new URL("/signin", request.nextUrl.origin);
+        url.searchParams.set("callbackUrl", request.nextUrl.pathname);
+        return NextResponse.redirect(url);
     }
 
+    console.log("✅ Middleware passed, proceeding to page.");
     return NextResponse.next();
 }
 

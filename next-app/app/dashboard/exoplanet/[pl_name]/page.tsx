@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useMemo, useRef } from "react"
-import { useRouter } from "next/router"
+import { useParams, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import {
     ArrowLeft,
@@ -34,13 +34,14 @@ import { ParticleBackground } from "@/components/particle-background"
 import { SpaceBackground } from "@/components/space-background"
 import Image from "next/image"
 
+
 interface ExoplanetData {
     [key: string]: string | number
     pl_name: string
 }
 
 export default function ExoplanetDetailsPage() {
-    //const { pl_name } = useParams<{ pl_name: string }>()
+    const { pl_name } = useParams<{ pl_name: string }>()
     const router = useRouter()
     const { animations, particleEffects } = useTheme()
     const { toast } = useToast()
@@ -51,8 +52,6 @@ export default function ExoplanetDetailsPage() {
     const containerRef = useRef<HTMLDivElement>(null)
     const [theme, setTheme] = useState<"light" | "dark">("dark")
 
-    const { pl_name } = router.query;
-    
     // Sample images for the carousel - in a real app, these would be specific to the exoplanet
     const exoplanetImages = useMemo(
         () => [
