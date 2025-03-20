@@ -764,8 +764,10 @@ export default function ExoplanetDetailsPage() {
                                                                 className="absolute inset-0"
                                                             >
                                                                 <Image
-                                                                    src={exoplanetImages[activeImageIndex].src || "/placeholder.svg"}
-                                                                    alt={exoplanetImages[activeImageIndex].alt}
+                                                                    src={exoplanetImages[activeImageIndex]?.src || "/placeholder.svg"}
+                                                                    alt={exoplanetImages[activeImageIndex]?.alt || "Exoplanet image"}
+                                                                    width={800} // Set an appropriate width
+                                                                    height={600} // Set an appropriate height
                                                                     className="w-full h-full object-cover rounded-lg"
                                                                 />
                                                                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 text-center text-sm text-white/80 backdrop-blur-sm">
