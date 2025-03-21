@@ -1,35 +1,32 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+import { getToken } from "next-auth/jwt"
 
 export async function middleware(request: NextRequest) {
-    const { pathname } = request.nextUrl;
-    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    const { pathname } = request.nextUrl
 
-    console.log("Middleware Executed:");
-    console.log("Path:", pathname);
-    console.log("Token:", token);
+    // Check if the path is protected
+    const protectedPaths = ["/dashboard", "/profile"]
+    const isPathProtected = protectedPaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 
-    const protectedPaths = ["/dashboard", "/profile", "/dashboard/exoplanet"];
-    const isPathProtected = protectedPaths.some((path) => pathname.startsWith(path));
+    if (isPathProtected) {
+        const token = await getToken({
+            req: request,
+            secret: process.env.NEXTAUTH_SECRET,
+        })
 
-    if (isPathProtected && !token) {
-        console.log("❌ Redirecting to /signin due to missing token");
-        const url = new URL("/signin", request.nextUrl.origin);
-        url.searchParams.set("callbackUrl", request.nextUrl.pathname);
-        return NextResponse.redirect(url);
+        // Redirect to login if not authenticated
+        if (!token) {
+            const url = new URL("/signin", request.url)
+            url.searchParams.set("callbackUrl", encodeURI(pathname))
+            return NextResponse.redirect(url)
+        }
     }
 
-    console.log("✅ Middleware passed, proceeding to page.");
-    return NextResponse.next();
+    return NextResponse.next()
 }
 
 export const config = {
-    matcher: [
-        "/dashboard",
-        "/dashboard/:path",
-        "/dashboard/exoplanet/:path",
-        "/profile",
-        "/profile/:path*",
-    ],
-};
+    matcher: ["/dashboard", "/dashboard/:path*", "/profile", "/profile/:path*"],
+}
+

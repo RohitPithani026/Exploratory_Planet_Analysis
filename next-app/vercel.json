@@ -9,6 +9,22 @@
             "destination": "/api/data/:path*"
         },
         {
+            "source": "/dashboard/:path*",
+            "destination": "/dashboard/:path*"
+        },
+        {
+            "source": "/profile/:path*",
+            "destination": "/profile/:path*"
+        },
+        {
+            "source": "/signin",
+            "destination": "/signin"
+        },
+        {
+            "source": "/signup",
+            "destination": "/signup"
+        },
+        {
             "source": "/(.*)",
             "destination": "/"
         }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo, useRef } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -20,7 +20,7 @@ import {
     Share2,
     ChevronRight,
     ChevronLeft,
-    Moon,
+    ExternalLink,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -28,29 +28,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { useTheme } from "@/components/theme-provider"
 import { useToast } from "@/hooks/use-toast"
-import { ParticleBackground } from "@/components/particle-background"
-import { SpaceBackground } from "@/components/space-background"
+import { CosmicBackground } from "@/components/cosmic-background"
 import Image from "next/image"
 
-
-interface ExoplanetData {
-    [key: string]: string | number
-    pl_name: string
-}
+// interface ExoplanetData {
+//     [key: string]: string | number
+//     pl_name: string
+// }
 
 export default function ExoplanetDetailsPage() {
     const { pl_name } = useParams<{ pl_name: string }>()
     const router = useRouter()
-    const { animations, particleEffects } = useTheme()
     const { toast } = useToast()
     const [exoplanet, setExoplanet] = useState<ExoplanetData | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [activeImageIndex, setActiveImageIndex] = useState(0)
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-    const containerRef = useRef<HTMLDivElement>(null)
-    const [theme, setTheme] = useState<"light" | "dark">("dark")
+    const [showTooltip, setShowTooltip] = useState<string | null>(null)
 
     // Sample images for the carousel - in a real app, these would be specific to the exoplanet
     const exoplanetImages = useMemo(
@@ -80,24 +74,6 @@ export default function ExoplanetDetailsPage() {
     )
 
     useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect()
-                setMousePosition({
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top,
-                })
-            }
-        }
-
-        window.addEventListener("mousemove", handleMouseMove)
-
-        return () => {
-            window.removeEventListener("mousemove", handleMouseMove)
-        }
-    }, [toast])
-
-    useEffect(() => {
         const fetchExoplanetData = async () => {
             try {
                 // Fetch data from our API
@@ -124,18 +100,20 @@ export default function ExoplanetDetailsPage() {
         fetchExoplanetData()
     }, [pl_name, toast])
 
-    const toggleTheme = () => {
-        const newTheme = theme === "light" ? "dark" : "light"
-        setTheme(newTheme)
-        document.documentElement.classList.toggle("dark")
+    const getHabitabilityColor = (score: number) => {
+        if (score > 0.8) return "text-green-400"
+        if (score > 0.6) return "text-blue-400"
+        if (score > 0.4) return "text-yellow-400"
+        if (score > 0.2) return "text-orange-400"
+        return "text-red-400"
     }
 
-    const getHabitabilityColor = (score: number) => {
-        if (score > 70) return "text-green-400"
-        if (score > 50) return "text-blue-400"
-        if (score > 30) return "text-yellow-400"
-        if (score > 10) return "text-orange-400"
-        return "text-red-400"
+    const getProgressColor = (score: number) => {
+        if (score > 0.8) return "bg-gradient-to-r from-green-500 to-emerald-500"
+        if (score > 0.6) return "bg-gradient-to-r from-blue-500 to-cyan-500"
+        if (score > 0.4) return "bg-gradient-to-r from-yellow-500 to-amber-500"
+        if (score > 0.2) return "bg-gradient-to-r from-orange-500 to-amber-500"
+        return "bg-gradient-to-r from-red-500 to-rose-500"
     }
 
     const getPlanetType = (radius: number | undefined) => {
@@ -166,7 +144,7 @@ export default function ExoplanetDetailsPage() {
     }
 
     // Function to format values based on type
-    const formatValue = (key: string, value: string | number): string | number => {
+    const formatValue = (key: string, value: string | number | boolean | null): string => {
         if (typeof value === "number") {
             if (key === "pl_rade") return `${value.toFixed(2)} R⊕`;
             if (key === "pl_bmasse") return `${value.toFixed(2)} M⊕`;
@@ -175,15 +153,10 @@ export default function ExoplanetDetailsPage() {
             if (key === "st_mass") return `${value.toFixed(2)} M☉`;
             if (key === "st_rad") return `${value.toFixed(2)} R☉`;
             if (key === "sy_dist") return `${value.toFixed(1)} light years`;
-
-            // Fix percentage formatting
-            if (key.includes("score") || key.includes("probability")) {
-                return value > 1 ? `${value.toFixed(0)}%` : `${(value * 100).toFixed(0)}%`;
-            }
-
-            return value;
+            if (key.includes("score") || key.includes("probability")) return `${(value * 100).toFixed(0)}%`;
+            return value.toString();
         }
-        return value;
+        return value !== null ? value.toString() : "N/A";
     };
 
 
@@ -219,39 +192,42 @@ export default function ExoplanetDetailsPage() {
     }
 
     // Group data for display in relevant sections
-    const groupData = (data: ExoplanetData) => {
-        const groups: {
-            planet: Record<string, string | number>;
-            star: Record<string, string | number>;
-            system: Record<string, string | number>;
-            habitability: Record<string, string | number>;
-            other: Record<string, string | number>;
-        } = {
+    interface ExoplanetData {
+        [key: string]: string | number | boolean | null; // Define expected field types
+    }
+
+    interface Groups {
+        planet: Record<string, string | number | boolean | null>;
+        star: Record<string, string | number | boolean | null>;
+        system: Record<string, string | number | boolean | null>;
+        habitability: Record<string, string | number | boolean | null>;
+        other: Record<string, string | number | boolean | null>;
+    }
+
+    const groupData = (data: ExoplanetData): Groups => {
+        const groups: Groups = {
             planet: {},
             star: {},
             system: {},
             habitability: {},
             other: {},
         };
-
         Object.entries(data).forEach(([key, value]) => {
-            if (key === "pl_name") return // Skip planet name as it's displayed in the header
-
+            if (key === "pl_name") return; // Skip planet name as it's displayed in the header
             if (key.startsWith("pl_")) {
-                groups.planet[key] = value
+                groups.planet[key] = value;
             } else if (key.startsWith("st_")) {
-                groups.star[key] = value
+                groups.star[key] = value;
             } else if (key.startsWith("sy_")) {
-                groups.system[key] = value
+                groups.system[key] = value;
             } else if (key.includes("hab") || key.includes("terra") || key.includes("score")) {
-                groups.habitability[key] = value
+                groups.habitability[key] = value;
             } else {
-                groups.other[key] = value
+                groups.other[key] = value;
             }
-        })
-
-        return groups
-    }
+        });
+        return groups;
+    };
 
     // Get planet color based on type
     const getPlanetColor = (type: string) => {
@@ -320,38 +296,45 @@ export default function ExoplanetDetailsPage() {
         return summary
     }
 
-    const getStarType = (st_teff: number) => {
-        if (!st_teff) return "Unknown"
-
-        if (st_teff > 30000) return "O-type"
-        if (st_teff > 10000) return "B-type"
-        if (st_teff > 7500) return "A-type"
-        if (st_teff > 6000) return "F-type"
-        if (st_teff > 5200) return "G-type (Sun-like)"
-        if (st_teff > 3700) return "K-type"
-        return "M-type (Red Dwarf)"
+    // Get similar planets based on characteristics
+    const getSimilarPlanets = () => {
+        return [
+            {
+                name: "Kepler-442b",
+                type: "Earth-like",
+                similarity: 95,
+                color: "from-blue-600 to-green-800",
+            },
+            {
+                name: "TRAPPIST-1e",
+                type: "Earth-like",
+                similarity: 88,
+                color: "from-blue-600 to-green-800",
+            },
+            {
+                name: "Proxima Centauri b",
+                type: "Super-Earth",
+                similarity: 82,
+                color: "from-indigo-600 to-blue-800",
+            },
+            {
+                name: "K2-18b",
+                type: "Neptune-like",
+                similarity: 75,
+                color: "from-indigo-600 to-purple-800",
+            },
+        ]
     }
 
     return (
-        <div className={theme === "dark" ? "dark" : ""} ref={containerRef}>
-            <div className="relative min-h-screen bg-[#030014]">
-                {particleEffects && <ParticleBackground />}
-                {particleEffects && <SpaceBackground />}
-
-                {animations && (
-                    <div
-                        className="pointer-events-none absolute inset-0 z-30 opacity-70"
-                        style={{
-                            background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(139, 92, 246, 0.15), transparent 25%)`,
-                        }}
-                    />
-                )}
+        <div className="relative min-h-screen">
+            <CosmicBackground>
                 <div className="container py-6 space-y-6 relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between pr-4 pl-4"
+                        className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
                     >
                         <Button
                             variant="ghost"
@@ -364,18 +347,6 @@ export default function ExoplanetDetailsPage() {
                         </Button>
 
                         <div className="flex gap-2">
-
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={toggleTheme}
-                                className="text-white hover:bg-white/10 relative group"
-                            >
-                                <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                                <span className="sr-only">Toggle theme</span>
-                            </Button>
-
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
@@ -415,7 +386,7 @@ export default function ExoplanetDetailsPage() {
                     </motion.div>
 
                     {isLoading ? (
-                        <div className="grid gap-6 md:grid-cols-3 p-8">
+                        <div className="grid gap-6 md:grid-cols-3">
                             <Card className="bg-black/40 border-white/10 md:col-span-2 animate-pulse">
                                 <CardHeader className="pb-2">
                                     <div className="h-6 w-1/3 bg-white/5 rounded"></div>
@@ -446,7 +417,7 @@ export default function ExoplanetDetailsPage() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.8 }}
-                                className="grid gap-6 md:grid-cols-3 p-8"
+                                className="grid gap-6 md:grid-cols-3"
                             >
                                 <Card className="bg-black/40 border-white/10 text-white md:col-span-2 backdrop-blur-sm overflow-hidden relative group">
                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-purple-900/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -461,7 +432,11 @@ export default function ExoplanetDetailsPage() {
                                                 <CardTitle className="text-2xl lg:text-3xl bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
                                                     {exoplanet.pl_name}
                                                 </CardTitle>
-                                                <CardDescription className="text-white/60">{getStarType(exoplanet.st_teff as number)} Star System</CardDescription>
+                                                <CardDescription className="text-white/60">
+                                                    {exoplanet.hasOwnProperty("sy_dist")
+                                                        ? `${formatValue("sy_dist", exoplanet.sy_dist)} from Earth`
+                                                        : "Distance unknown"}
+                                                </CardDescription>
                                             </motion.div>
 
                                             <motion.div
@@ -571,8 +546,13 @@ export default function ExoplanetDetailsPage() {
                                                             <div
                                                                 key={key}
                                                                 className="space-y-2 bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                                                                onMouseEnter={() => setShowTooltip(key)}
+                                                                onMouseLeave={() => setShowTooltip(null)}
                                                             >
-                                                                <h3 className="text-sm font-medium text-white/60">{getFieldName(key)}</h3>
+                                                                <h3 className="text-sm font-medium text-white/60 flex items-center">
+                                                                    {getFieldName(key)}
+                                                                    {showTooltip === key && <span className="ml-2 text-xs text-white/40">({key})</span>}
+                                                                </h3>
                                                                 <p className="text-white">{formatValue(key, value)}</p>
                                                             </div>
                                                         ))}
@@ -581,8 +561,13 @@ export default function ExoplanetDetailsPage() {
                                                             <div
                                                                 key={key}
                                                                 className="space-y-2 bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                                                                onMouseEnter={() => setShowTooltip(key)}
+                                                                onMouseLeave={() => setShowTooltip(null)}
                                                             >
-                                                                <h3 className="text-sm font-medium text-white/60">{getFieldName(key)}</h3>
+                                                                <h3 className="text-sm font-medium text-white/60 flex items-center">
+                                                                    {getFieldName(key)}
+                                                                    {showTooltip === key && <span className="ml-2 text-xs text-white/40">({key})</span>}
+                                                                </h3>
                                                                 <p className="text-white">{formatValue(key, value)}</p>
                                                             </div>
                                                         ))}
@@ -591,8 +576,13 @@ export default function ExoplanetDetailsPage() {
                                                             <div
                                                                 key={key}
                                                                 className="space-y-2 bg-white/5 p-3 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                                                                onMouseEnter={() => setShowTooltip(key)}
+                                                                onMouseLeave={() => setShowTooltip(null)}
                                                             >
-                                                                <h3 className="text-sm font-medium text-white/60">{getFieldName(key)}</h3>
+                                                                <h3 className="text-sm font-medium text-white/60 flex items-center">
+                                                                    {getFieldName(key)}
+                                                                    {showTooltip === key && <span className="ml-2 text-xs text-white/40">({key})</span>}
+                                                                </h3>
                                                                 <p className="text-white">{formatValue(key, value)}</p>
                                                             </div>
                                                         ))}
@@ -611,21 +601,12 @@ export default function ExoplanetDetailsPage() {
                                                                         {formatValue("habitability_score", exoplanet.habitability_score)}
                                                                     </span>
                                                                 </div>
-                                                                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
                                                                     <motion.div
                                                                         initial={{ width: 0 }}
-                                                                        animate={{ width: `${exoplanet.habitability_score}%` }}
+                                                                        animate={{ width: `${(exoplanet.habitability_score as number) * 100}%` }}
                                                                         transition={{ duration: 1, delay: 0.2 }}
-                                                                        className={`h-full rounded-full ${(exoplanet.habitability_score as number) > 70
-                                                                            ? "bg-green-500"
-                                                                            : (exoplanet.habitability_score as number) > 50
-                                                                                ? "bg-blue-500"
-                                                                                : (exoplanet.habitability_score as number) > 30
-                                                                                    ? "bg-yellow-500"
-                                                                                    : (exoplanet.habitability_score as number) > 10
-                                                                                        ? "bg-orange-500"
-                                                                                        : "bg-red-500"
-                                                                            }`}
+                                                                        className={`h-full rounded-full ${getProgressColor(exoplanet.habitability_score as number)}`}
                                                                     />
                                                                 </div>
                                                                 <p className="text-xs text-white/60">
@@ -644,21 +625,12 @@ export default function ExoplanetDetailsPage() {
                                                                         {formatValue("terraformability_score", exoplanet.terraformability_score)}
                                                                     </span>
                                                                 </div>
-                                                                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                                                <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
                                                                     <motion.div
                                                                         initial={{ width: 0 }}
-                                                                        animate={{ width: `${(exoplanet.terraformability_score as number)}%` }}
-                                                                        transition={{ duration: 1, delay: 0.2 }}
-                                                                        className={`h-full rounded-full ${(exoplanet.terraformability_score as number) > 70
-                                                                            ? "bg-green-500"
-                                                                            : (exoplanet.terraformability_score as number) > 50
-                                                                                ? "bg-blue-500"
-                                                                                : (exoplanet.terraformability_score as number) > 30
-                                                                                    ? "bg-yellow-500"
-                                                                                    : (exoplanet.terraformability_score as number) > 10
-                                                                                        ? "bg-orange-500"
-                                                                                        : "bg-red-500"
-                                                                            }`}
+                                                                        animate={{ width: `${(exoplanet.terraformability_score as number) * 100}%` }}
+                                                                        transition={{ duration: 1, delay: 0.3 }}
+                                                                        className={`h-full rounded-full ${getProgressColor(exoplanet.terraformability_score as number)}`}
                                                                     />
                                                                 </div>
                                                                 <p className="text-xs text-white/60">
@@ -764,13 +736,15 @@ export default function ExoplanetDetailsPage() {
                                                                 transition={{ duration: 0.5 }}
                                                                 className="absolute inset-0"
                                                             >
+
                                                                 <Image
-                                                                    src={exoplanetImages[activeImageIndex]?.src || "/placeholder.svg"}
-                                                                    alt={exoplanetImages[activeImageIndex]?.alt || "Exoplanet image"}
-                                                                    width={800} // Set an appropriate width
-                                                                    height={600} // Set an appropriate height
+                                                                    src={exoplanetImages[activeImageIndex]?.src ?? "/placeholder.svg"}
+                                                                    alt={exoplanetImages[activeImageIndex]?.alt || "Exoplanet Image"}
+                                                                    width={500} // Add appropriate width
+                                                                    height={500} // Add appropriate height
                                                                     className="w-full h-full object-cover rounded-lg"
                                                                 />
+
                                                                 <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 text-center text-sm text-white/80 backdrop-blur-sm">
                                                                     {exoplanetImages[activeImageIndex].caption}
                                                                 </div>
@@ -924,6 +898,16 @@ export default function ExoplanetDetailsPage() {
                                                     )}
                                                 </ul>
                                             </CardContent>
+
+                                            <CardFooter className="relative z-10 pt-0">
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                                                >
+                                                    <ExternalLink className="mr-2 h-4 w-4" />
+                                                    View in NASA Archive
+                                                </Button>
+                                            </CardFooter>
                                         </Card>
                                     </motion.div>
                                 </div>
@@ -949,37 +933,19 @@ export default function ExoplanetDetailsPage() {
 
                                     <CardContent className="relative z-10">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                            {/* This would be populated with actual similar planets in a real app */}
-                                            {[1, 2, 3, 4].map((i) => (
+                                            {getSimilarPlanets().map((planet, i) => (
                                                 <div
                                                     key={i}
                                                     className="rounded-lg border border-white/10 bg-white/5 p-3 hover:bg-white/10 transition-colors"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <div
-                                                            className={`w-8 h-8 rounded-full bg-gradient-to-br ${i === 1
-                                                                ? "from-blue-600 to-green-800"
-                                                                : i === 2
-                                                                    ? "from-indigo-600 to-blue-800"
-                                                                    : i === 3
-                                                                        ? "from-purple-600 to-indigo-800"
-                                                                        : "from-red-600 to-purple-800"
-                                                                }`}
-                                                        ></div>
+                                                        <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${planet.color}`}></div>
                                                         <div>
-                                                            <div className="font-medium text-white">Similar Planet {i}</div>
-                                                            <div className="text-xs text-white/60">
-                                                                {i === 1
-                                                                    ? "Earth-like"
-                                                                    : i === 2
-                                                                        ? "Super-Earth"
-                                                                        : i === 3
-                                                                            ? "Neptune-like"
-                                                                            : "Gas Giant"}
-                                                            </div>
+                                                            <div className="font-medium text-white">{planet.name}</div>
+                                                            <div className="text-xs text-white/60">{planet.type}</div>
                                                         </div>
                                                     </div>
-                                                    <div className="mt-2 text-xs text-white/60">Similarity score: {90 - i * 5}%</div>
+                                                    <div className="mt-2 text-xs text-white/60">Similarity score: {planet.similarity}%</div>
                                                 </div>
                                             ))}
                                         </div>
@@ -1001,7 +967,7 @@ export default function ExoplanetDetailsPage() {
                         </div>
                     )}
                 </div>
-            </div>
+            </CosmicBackground>
         </div>
     )
 }
