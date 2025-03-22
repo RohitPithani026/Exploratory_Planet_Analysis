@@ -1,6 +1,9 @@
-import type { NextConfig } from "next"
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: false, // Disables React Strict Mode
+  images: {
+    domains: ["picsum.photos"], 
+  },
   async rewrites() {
     return [
       {
@@ -10,6 +13,10 @@ const nextConfig: NextConfig = {
       {
         source: "/api/data/:path*",
         destination: "/api/data/:path*",
+      },
+      {
+        source: "/api/ai/:path*",
+        destination: "/api/ai/:path*",
       },
       {
         source: "/dashboard/:path*",
@@ -27,9 +34,8 @@ const nextConfig: NextConfig = {
         source: "/signup",
         destination: "/signup",
       },
-    ]
+    ];
   },
-}
+};
 
-export default nextConfig
-
+export default nextConfig;

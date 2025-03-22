@@ -9,6 +9,10 @@
             "destination": "/api/data/:path*"
         },
         {
+            "source": "/api/ai/:path*",
+            "destination": "/api/ai/:path"
+        },
+        {
             "source": "/dashboard/:path*",
             "destination": "/dashboard/:path*"
         },
