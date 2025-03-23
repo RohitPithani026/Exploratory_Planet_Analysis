@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
         // Create different image URLs based on the prompt
         // These are placeholder URLs that would be replaced with actual generated images
-        const imageUrl = `https://picsum.photos/seed/${seed}/800/600`
+        const imageUrl = `https://picsum.photos/seed/${seed}/400/300`
 
         return NextResponse.json({
             success: true,

@@ -21,10 +21,10 @@ export function AIImageGallery({ images, isLoading, error, onGenerate, planetNam
 
     // For demo purposes, we'll use placeholder images if no AI images are available
     const placeholderImages = [
-        "/placeholder.svg?height=600&width=800",
-        "/placeholder.svg?height=600&width=800",
-        "/placeholder.svg?height=600&width=800",
-        "/placeholder.svg?height=600&width=800",
+        "/placeholder.svg?height=300&width=400",
+        "/placeholder.svg?height=300&width=400",
+        "/placeholder.svg?height=300&width=400",
+        "/placeholder.svg?height=300&width=400",
     ]
 
     const displayImages = images || placeholderImages

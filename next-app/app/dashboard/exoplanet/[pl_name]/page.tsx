@@ -6,7 +6,6 @@ import { motion } from "framer-motion"
 import {
     ArrowLeft,
     Calendar,
-    Download,
     Info,
     Map,
     ThermometerSnowflake,
@@ -16,8 +15,6 @@ import {
     Orbit,
     Droplets,
     Zap,
-    Share2,
-    ExternalLink,
     Moon,
     Globe,
     Sparkles,
@@ -28,7 +25,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useTheme } from "@/components/theme-provider"
 import { useToast } from "@/hooks/use-toast"
 import { ParticleBackground } from "@/components/particle-background"
@@ -39,7 +35,8 @@ import { HabitabilityGauge } from "@/components/habitability-gauge"
 import { PlanetVisualization } from "@/components/planet-visualization"
 import { useAIContent } from "@/hooks/use-ai-content"
 import { useAIImages } from "@/hooks/use-ai-images"
-
+import { ShareDialog } from "@/components/share-dialog"
+import { ImportDataDialog } from "@/components/import-data-dialog"
 interface ExoplanetData {
     [key: string]: string | number | boolean | null
     pl_name: string
@@ -205,7 +202,7 @@ export default function ExoplanetDetailsPage() {
         habitability: Record<string, string | number | boolean | null>;
         other: Record<string, string | number | boolean | null>;
     };
-    
+
     const groupData = (data: Record<string, string | number | boolean | null>): GroupedData => {
         const groups: GroupedData = {
             planet: {},
@@ -214,10 +211,10 @@ export default function ExoplanetDetailsPage() {
             habitability: {},
             other: {},
         };
-    
+
         Object.entries(data).forEach(([key, value]) => {
             if (key === "pl_name") return;
-    
+
             if (key.startsWith("pl_")) {
                 groups.planet[key] = value;
             } else if (key.startsWith("st_")) {
@@ -230,9 +227,9 @@ export default function ExoplanetDetailsPage() {
                 groups.other[key] = value;
             }
         });
-    
+
         return groups;
-    };    
+    };
 
     // Get planet color based on type
     const getPlanetColor = (type: string) => {
@@ -343,10 +340,25 @@ export default function ExoplanetDetailsPage() {
         return "M-type (Red Dwarf)"
     }
 
+    const getPlanetUrl = () => {
+        if (typeof window !== "undefined") {
+            return window.location.href
+        }
+        return ""
+    }
+
+    const handleImportData = (data: ExoplanetData) => {
+        setExoplanet(data)
+        toast({
+            title: "Data imported",
+            description: "Exoplanet data has been successfully imported.",
+        })
+    }
+
     return (
         <div className={theme === "dark" ? "dark" : ""} ref={containerRef}>
             <div className="relative min-h-screen space-bg">
-                {/* <div className="absolute inset-0 nebula-bg"></div> */}
+                <div className="absolute inset-0 nebula-bg"></div>
                 {particleEffects && <ParticleBackground />}
                 {particleEffects && <SpaceBackground />}
 
@@ -358,12 +370,12 @@ export default function ExoplanetDetailsPage() {
                         }}
                     />
                 )}
-                <div className="container py-6 space-y-6 relative z-10">
+                <div className="container py-6 space-y-6 relative z-10 pr-2 pl-2">
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between pr-4 pl-4"
+                        className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between px-4 sm:px-0"
                     >
                         <Button
                             variant="ghost"
@@ -375,7 +387,7 @@ export default function ExoplanetDetailsPage() {
                             Back to Exoplanets
                         </Button>
 
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -387,46 +399,18 @@ export default function ExoplanetDetailsPage() {
                                 <span className="sr-only">Toggle theme</span>
                             </Button>
 
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="border-white/10 bg-white/5 text-white hover:bg-white/10 font-body"
-                                        >
-                                            <Share2 className="mr-2 h-4 w-4" />
-                                            Share
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Share this exoplanet</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            {exoplanet && (
+                                <>
+                                    <ShareDialog planetName={exoplanet.pl_name} planetUrl={getPlanetUrl()} planetData={exoplanet} />
 
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="border-white/10 bg-white/5 text-white hover:bg-white/10 font-body"
-                                        >
-                                            <Download className="mr-2 h-4 w-4" />
-                                            Export Data
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Download exoplanet data</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                                    <ImportDataDialog onImportSuccess={handleImportData} />
+                                </>
+                            )}
                         </div>
                     </motion.div>
 
                     {isLoading ? (
-                        <div className="grid gap-6 md:grid-cols-3 p-8">
+                        <div className="grid gap-6 md:grid-cols-3 p-4 sm:p-8">
                             <Card className="bg-black/40 border-white/10 md:col-span-2 animate-pulse">
                                 <CardHeader className="pb-2">
                                     <div className="h-6 w-1/3 bg-white/5 rounded"></div>
@@ -597,27 +581,30 @@ export default function ExoplanetDetailsPage() {
                                             transition={{ duration: 0.5, delay: 0.6 }}
                                         >
                                             <Tabs defaultValue="overview" className="mt-6">
-                                                <TabsList className="bg-white/5 border border-white/10 p-0.5 backdrop-blur-sm">
+                                                <TabsList className="bg-white/5 border border-white/10 p-0.5 backdrop-blur-sm overflow-x-auto flex w-full">
                                                     <TabsTrigger
                                                         value="overview"
                                                         className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70 font-body"
                                                     >
                                                         <Info className="mr-2 h-4 w-4" />
-                                                        Overview
+                                                        <span className="hidden sm:inline">Overview</span>
+                                                        <span className="sm:hidden">Info</span>
                                                     </TabsTrigger>
                                                     <TabsTrigger
                                                         value="habitability"
                                                         className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70 font-body"
                                                     >
                                                         <Droplets className="mr-2 h-4 w-4" />
-                                                        Habitability
+                                                        <span className="hidden sm:inline">Habitability</span>
+                                                        <span className="sm:hidden">Habit</span>
                                                     </TabsTrigger>
                                                     <TabsTrigger
                                                         value="star"
                                                         className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70 font-body"
                                                     >
                                                         <Sun className="mr-2 h-4 w-4" />
-                                                        Host Star
+                                                        <span className="hidden sm:inline">Host Star</span>
+                                                        <span className="sm:hidden">Star</span>
                                                     </TabsTrigger>
                                                 </TabsList>
 
@@ -695,36 +682,25 @@ export default function ExoplanetDetailsPage() {
                                                         transition={{ duration: 0.5, delay: 1.2 }}
                                                         className="px-8 py-4"
                                                     >
-                                                        <CardHeader className="relative z-10">
-                                                            <CardTitle className="flex items-center font-display">
-                                                                <Compass className="mr-2 h-5 w-5 text-indigo-400" />
-                                                                Habitability Assessment
-                                                            </CardTitle>
-                                                            <CardDescription className="text-white/60 font-body">
-                                                                Detailed analysis of habitability factors
-                                                            </CardDescription>
-                                                        </CardHeader>
-
-                                                        <CardContent className="relative z-10">
-                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <CardTitle className="flex items-center justify-start font-display">
+                                                            <Compass className="mr-2 h-5 w-5 text-indigo-400" />
+                                                            Habitability & Terraformability Assessment
+                                                        </CardTitle>
+                                                        <CardContent className="relative z-10 pt-8">
+                                                            <div className="flex flex-col gap-25">
                                                                 {exoplanet.hasOwnProperty("habitability_score") && (
-                                                                    <div>
-                                                                        <HabitabilityGauge
-                                                                            score={exoplanet.habitability_score as number}
-                                                                            label="Habitability Score"
-                                                                            description="Likelihood of supporting Earth-like life forms"
-                                                                        />
-                                                                    </div>
+                                                                    <HabitabilityGauge
+                                                                        score={exoplanet.habitability_score as number}
+                                                                        label="Habitability Score"
+                                                                        description="Likelihood of supporting Earth-like life forms"
+                                                                    />
                                                                 )}
-
                                                                 {exoplanet.hasOwnProperty("terraformability_score") && (
-                                                                    <div>
-                                                                        <HabitabilityGauge
-                                                                            score={exoplanet.terraformability_score as number}
-                                                                            label="Terraformability"
-                                                                            description="Potential for human modification to support life"
-                                                                        />
-                                                                    </div>
+                                                                    <HabitabilityGauge
+                                                                        score={exoplanet.terraformability_score as number}
+                                                                        label="Terraformability Score"
+                                                                        description="Potential for human modification to support life"
+                                                                    />
                                                                 )}
                                                             </div>
                                                         </CardContent>
@@ -886,16 +862,6 @@ export default function ExoplanetDetailsPage() {
                                                     )}
                                                 </ul>
                                             </CardContent>
-
-                                            <CardFooter className="relative z-10 pt-0">
-                                                <Button
-                                                    variant="outline"
-                                                    className="w-full border-white/10 bg-white/5 hover:bg-white/10 text-white font-body"
-                                                >
-                                                    <ExternalLink className="mr-2 h-4 w-4" />
-                                                    View in NASA Archive
-                                                </Button>
-                                            </CardFooter>
                                         </Card>
                                     </motion.div>
                                 </div>
