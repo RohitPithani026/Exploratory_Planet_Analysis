@@ -1,9 +1,3 @@
-// import { useToast as useToastOriginal } from "@/components/ui/use-toast"
-
-// export const useToast = useToastOriginal
-
-
-
 "use client"
 
 // Inspired by react-hot-toast library
