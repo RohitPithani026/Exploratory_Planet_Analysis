@@ -3,18 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
-import {
-    BarChart3,
-    ChevronRight,
-    Globe,
-    Menu,
-    Moon,
-    Search,
-    Star,
-    Sun,
-    User,
-    Rocket,
-} from "lucide-react"
+import { BarChart3, ChevronRight, Globe, Menu, Moon, Search, Star, Sun, User, Rocket, RefreshCw } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
@@ -28,10 +17,35 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ParticleBackground } from "@/components/particle-background"
 import { SpaceBackground } from "@/components/space-background"
 import { PlanetCard } from "@/components/planet-card"
-import { GlowingButton } from "@/components/glowing-button"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { useTheme } from "@/components/theme-provider"
 import { useToast } from "@/hooks/use-toast"
+
+type Exoplanet = {
+    pl_name: string
+    pl_rade?: number | null
+    pl_bmasse?: number | null
+    pl_orbper?: number | null
+    pl_eqt?: number | null
+    st_teff?: number | null
+    st_mass?: number | null
+    st_rad?: number | null
+    st_met?: number | null
+    pl_eqt_normalized?: number | null
+    st_met_normalized?: number | null
+    surface_gravity?: number | null
+    surface_gravity_normalized?: number | null
+    habitability_score?: number | null
+    terraformability_score?: number | null
+    st_activity?: number | null
+    pl_atmos?: number | null
+    pl_surf_temp?: number | null
+    pl_escape_vel?: number | null
+    pl_radiation_flux?: number | null
+    ESI?: number | null
+    pl_water_probability?: number | null
+    [key: string]: string | number | null | undefined
+}
 
 export default function Dashboard() {
     const { data: session } = useSession()
@@ -42,8 +56,101 @@ export default function Dashboard() {
     const [isLoading, setIsLoading] = useState(true)
     const [activeTab, setActiveTab] = useState("overview")
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+    const [exoplanets, setExoplanets] = useState<Exoplanet[]>([])
+    const [searchQuery, setSearchQuery] = useState("")
+    const [sortBy] = useState<string | null>(null)
+    const [sortOrder] = useState<"asc" | "desc">("desc")
+    const [filteredPlanets, setFilteredPlanets] = useState<Exoplanet[]>([])
+    const [isSearching, setIsSearching] = useState(false)
+    const [statistics, setStatistics] = useState({
+        totalPlanets: 0,
+        habitablePlanets: 0,
+        terraformablePlanets: 0,
+        dataAccuracy: 0,
+    })
 
     const containerRef = useRef<HTMLDivElement>(null)
+
+    // Calculate statistics from exoplanet data
+    const calculateStatistics = (planets: Exoplanet[]) => {
+        if (!planets || planets.length === 0)
+            return {
+                totalPlanets: 0,
+                habitablePlanets: 0,
+                terraformablePlanets: 0,
+                dataAccuracy: 0,
+            }
+
+        const habitablePlanets = planets.filter(
+            (planet) =>
+                planet.habitability_score !== undefined &&
+                planet.habitability_score !== null &&
+                Number(planet.habitability_score) > 50,
+        ).length
+
+        const terraformablePlanets = planets.filter(
+            (planet) =>
+                planet.terraformability_score !== undefined &&
+                planet.terraformability_score !== null &&
+                Number(planet.terraformability_score) > 60,
+        ).length
+
+        // Calculate data accuracy (percentage of planets with complete data)
+        const planetsWithCompleteData = planets.filter(
+            (planet) =>
+                planet.pl_rade !== undefined &&
+                planet.pl_rade !== null &&
+                planet.pl_bmasse !== undefined &&
+                planet.pl_bmasse !== null &&
+                planet.habitability_score !== undefined &&
+                planet.habitability_score !== null,
+        ).length
+
+        const dataAccuracy = (planetsWithCompleteData / planets.length) * 100
+
+        return {
+            totalPlanets: planets.length,
+            habitablePlanets,
+            terraformablePlanets,
+            dataAccuracy: Math.round(dataAccuracy * 10) / 10,
+        }
+    }
+
+    // Fetch exoplanet data
+    useEffect(() => {
+        const fetchExoplanets = async () => {
+            try {
+                setIsLoading(true)
+                const response = await fetch("/api/data")
+                if (!response.ok) {
+                    throw new Error("Failed to fetch exoplanet data")
+                }
+                const data = await response.json()
+                setExoplanets(data)
+
+                // Calculate statistics
+                const stats = calculateStatistics(data)
+                setStatistics(stats)
+
+                // Store total count in localStorage for reference
+                localStorage.setItem("totalExpoPlanets", data.length.toString())
+
+                // Set initial filtered planets
+                setFilteredPlanets(data.slice(0, 10)) // Show first 10 by default
+                setIsLoading(false)
+            } catch (error) {
+                console.error("Error fetching exoplanet data:", error)
+                setIsLoading(false)
+                toast({
+                    title: "Error",
+                    description: "Failed to load exoplanet data. Please try again later.",
+                    variant: "destructive",
+                })
+            }
+        }
+
+        fetchExoplanets()
+    }, [toast])
 
     useEffect(() => {
         // Simulate progress loading
@@ -83,6 +190,105 @@ export default function Dashboard() {
 
     const handleTabChange = (value: string) => {
         setActiveTab(value)
+    }
+
+    useEffect(() => {
+        // Filter planets based on search query
+        if (searchQuery.trim() === "") {
+            setIsSearching(false)
+            setFilteredPlanets(exoplanets.slice(0, 10)) // Show first 10 when not searching
+            return
+        }
+
+        setIsSearching(true)
+        const filtered = exoplanets.filter((planet) => planet.pl_name.toLowerCase().includes(searchQuery.toLowerCase()))
+
+        // Sort planets if sortBy is set
+        if (sortBy) {
+            filtered.sort((a, b) => {
+                const aValue = a[sortBy as keyof Exoplanet]
+                const bValue = b[sortBy as keyof Exoplanet]
+
+                // Handle null values
+                if (aValue === null && bValue === null) return 0
+                if (aValue === null) return 1
+                if (bValue === null) return -1
+
+                // Sort based on sortOrder
+                return sortOrder === "asc"
+                    ? Number(aValue) < Number(bValue)
+                        ? -1
+                        : 1
+                    : Number(aValue) > Number(bValue)
+                        ? -1
+                        : 1
+            })
+        }
+
+        setFilteredPlanets(filtered.slice(0, 20)) // Limit to 20 results for performance
+    }, [exoplanets, searchQuery, sortBy, sortOrder])
+
+    // Function to get planet type based on data
+    const getPlanetType = (planet: Exoplanet) => {
+        if (!planet.pl_rade) return "Unknown"
+
+        if (planet.pl_rade < 0.5) return "Sub-Earth"
+        if (planet.pl_rade < 1.6) return "Earth-like"
+        if (planet.pl_rade < 4) return "Super-Earth"
+        if (planet.pl_rade < 10) return "Neptune-like"
+        return "Gas Giant"
+    }
+
+    // Function to calculate habitability score if not present
+    const getHabitabilityScore = (planet: Exoplanet) => {
+        if (planet.habitability_score !== null && planet.habitability_score !== undefined) {
+            return Number(planet.habitability_score)
+        }
+
+        // Simple fallback calculation
+        let score = 0.5 // Default middle score
+
+        // Adjust based on available data
+        if (planet.ESI) {
+            score = Number(planet.ESI)
+        } else if (planet.pl_eqt) {
+            // Temperature factor (Earth-like temperatures score higher)
+            const temp = Number(planet.pl_eqt)
+            if (temp > 200 && temp < 320) {
+                score += 0.2
+            } else if (temp > 150 && temp < 380) {
+                score += 0.1
+            } else {
+                score -= 0.1
+            }
+        }
+
+        return Math.min(Math.max(score, 0.1), 0.99) // Keep between 0.1 and 0.99
+    }
+
+    // Function to calculate terraformability score if not present
+    const getTerraformabilityScore = (planet: Exoplanet) => {
+        if (planet.terraformability_score !== null && planet.terraformability_score !== undefined) {
+            return Number(planet.terraformability_score)
+        }
+
+        // Simple fallback calculation
+        let score = 0.6 // Default middle score
+
+        // Adjust based on available data
+        if (planet.pl_rade) {
+            const radius = Number(planet.pl_rade)
+            // Planets closer to Earth size are easier to terraform
+            if (radius > 0.8 && radius < 1.5) {
+                score += 0.2
+            } else if (radius > 0.5 && radius < 2) {
+                score += 0.1
+            } else if (radius > 3) {
+                score -= 0.2
+            }
+        }
+
+        return Math.min(Math.max(score, 0.1), 0.99) // Keep between 0.1 and 0.99
     }
 
     if (isLoading) {
@@ -128,7 +334,7 @@ export default function Dashboard() {
                         initial={{ y: -20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: animations ? 0.5 : 0 }}
-                        className="container flex h-16 items-center justify-between p-8"
+                        className="container flex h-16 items-center justify-between p-4 md:p-8"
                     >
                         <div className="flex items-center gap-2 md:gap-4">
                             <Sheet>
@@ -216,14 +422,28 @@ export default function Dashboard() {
                         <div className="flex items-center gap-4">
                             <form className="hidden md:flex">
                                 <div className="relative group">
-                                    <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500/50 to-purple-600/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
-                                    <div className="relative">
-                                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/40" />
-                                        <Input
-                                            type="search"
-                                            placeholder="Search exoplanets..."
-                                            className="w-64 rounded-full border-white/10 bg-white/5 pl-8 text-white placeholder:text-white/30 focus:border-indigo-500/50 focus:ring-indigo-500/50"
-                                        />
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <div className="relative">
+                                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/50" />
+                                            <Input
+                                                type="search"
+                                                placeholder="Search exoplanets..."
+                                                className="w-full sm:w-[300px] bg-white/5 border-white/10 pl-8 text-white placeholder:text-white/50"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                            />
+                                        </div>
+
+                                        {searchQuery && (
+                                            <Button
+                                                variant="outline"
+                                                className="border-white/10 bg-white/5 text-white hover:bg-white/10"
+                                                onClick={() => setSearchQuery("")}
+                                            >
+                                                <RefreshCw className="h-4 w-4 mr-2" />
+                                                Clear
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             </form>
@@ -257,7 +477,7 @@ export default function Dashboard() {
                                         <Avatar className="h-8 w-8">
                                             <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
                                             <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.fullName?.charAt(0) || "U"}
+                                                {session?.user?.name?.charAt(0) || "U"}
                                             </AvatarFallback>
                                         </Avatar>
                                     </Button>
@@ -269,11 +489,11 @@ export default function Dashboard() {
                                         <Avatar className="h-12 w-12">
                                             <AvatarImage src={session?.user?.image || "/placeholder.svg?height=48&width=48"} />
                                             <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.fullName?.charAt(0) || "U"}
+                                                {session?.user?.name?.charAt(0) || "U"}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="space-y-1 flex-1">
-                                            <h4 className="text-sm font-semibold">{session?.user?.fullName || "John Doe"}</h4>
+                                            <h4 className="text-sm font-semibold">{session?.user?.name || "John Doe"}</h4>
                                             <p className="text-xs text-white/60">{session?.user?.email || "Exoplanet Researcher"}</p>
                                             <div className="flex items-center pt-2">
                                                 <Link
@@ -299,6 +519,20 @@ export default function Dashboard() {
                             transition={{ duration: animations ? 0.5 : 0 }}
                             className="flex flex-col gap-4 md:gap-8"
                         >
+                            {/* Mobile search bar */}
+                            <div className="md:hidden w-full mb-4">
+                                <div className="relative">
+                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/50" />
+                                    <Input
+                                        type="search"
+                                        placeholder="Search exoplanets..."
+                                        className="w-full bg-white/5 border-white/10 pl-8 text-white placeholder:text-white/50"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
                             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                                 <div>
                                     <h1 className="bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-3xl font-bold tracking-tighter text-transparent">
@@ -306,8 +540,49 @@ export default function Dashboard() {
                                     </h1>
                                     <p className="text-white/60">Welcome back, explore the latest exoplanet data</p>
                                 </div>
-                                <GlowingButton>Analyze New Exoplanet</GlowingButton>
                             </div>
+
+                            {/* Search Results Section */}
+                            {isSearching && (
+                                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+                                    <Card className="border-white/10 bg-black/30 backdrop-blur-sm">
+                                        <CardHeader className="pb-3">
+                                            <CardTitle className="text-white flex items-center justify-between">
+                                                <span>Search Results</span>
+                                                <span className="text-sm font-normal text-white/60">
+                                                    {filteredPlanets.length} {filteredPlanets.length === 1 ? "result" : "results"}
+                                                </span>
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {filteredPlanets.length > 0 ? (
+                                                    filteredPlanets.map((planet, index) => (
+                                                        <Link
+                                                            href={`/dashboard/exoplanet/${encodeURIComponent(planet.pl_name)}`}
+                                                            key={planet.pl_name}
+                                                        >
+                                                            <PlanetCard
+                                                                name={planet.pl_name}
+                                                                type={getPlanetType(planet)}
+                                                                habitabilityScore={Math.round(getHabitabilityScore(planet))}
+                                                                terraformabilityScore={Math.round(getTerraformabilityScore(planet))}
+                                                                index={index}
+                                                            />
+                                                        </Link>
+                                                    ))
+                                                ) : (
+                                                    <div className="col-span-full flex flex-col items-center justify-center py-8 text-center">
+                                                        <Globe className="h-12 w-12 text-white/20 mb-4" />
+                                                        <h3 className="text-lg font-medium text-white">No planets found</h3>
+                                                        <p className="text-white/60 mt-1">Try a different search term</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </motion.div>
+                            )}
 
                             <Tabs defaultValue="overview" className="space-y-4" value={activeTab} onValueChange={handleTabChange}>
                                 <TabsList className="grid w-full grid-cols-3 md:w-auto gap-1 rounded-full border border-white/10 bg-white/5 p-1">
@@ -345,28 +620,28 @@ export default function Dashboard() {
                                                     {[
                                                         {
                                                             title: "Total Exoplanets",
-                                                            value: localStorage.getItem("totalExpoPlanets"),
+                                                            value: statistics.totalPlanets.toLocaleString(),
                                                             change: "+120",
                                                             icon: <Globe className="h-4 w-4 text-indigo-400" />,
                                                             color: "indigo",
                                                         },
                                                         {
                                                             title: "Habitable Planets",
-                                                            value: "217",
+                                                            value: statistics.habitablePlanets.toLocaleString(),
                                                             change: "+12",
                                                             icon: <Star className="h-4 w-4 text-green-400" />,
                                                             color: "green",
                                                         },
                                                         {
                                                             title: "Terraformable Planets",
-                                                            value: "842",
+                                                            value: statistics.terraformablePlanets.toLocaleString(),
                                                             change: "+35",
                                                             icon: <Rocket className="h-4 w-4 text-purple-400" />,
                                                             color: "purple",
                                                         },
                                                         {
                                                             title: "Data Accuracy",
-                                                            value: "94.2%",
+                                                            value: `${statistics.dataAccuracy}%`,
                                                             change: "+2.1%",
                                                             icon: <BarChart3 className="h-4 w-4 text-blue-400" />,
                                                             color: "blue",
@@ -453,21 +728,21 @@ export default function Dashboard() {
                                                             </CardHeader>
                                                             <CardContent className="relative z-10">
                                                                 <div className="space-y-6">
-                                                                    {[
-                                                                        { name: "Kepler-452b", type: "Super Earth", distance: "2 days ago", score: 0.82 },
-                                                                        { name: "TRAPPIST-1e", type: "Earth-like", distance: "5 days ago", score: 0.91 },
-                                                                        { name: "HD 219134 b", type: "Rocky", distance: "1 week ago", score: 0.67 },
-                                                                        { name: "K2-18b", type: "Mini-Neptune", distance: "2 weeks ago", score: 0.75 },
-                                                                    ].map((planet, index) => (
-                                                                        <PlanetCard
-                                                                            key={planet.name}
-                                                                            name={planet.name}
-                                                                            type={planet.type}
-                                                                            distance={planet.distance}
-                                                                            habitabilityScore={planet.score}
-                                                                            index={index}
-                                                                            score={planet.score}
-                                                                        />
+                                                                    {filteredPlanets.slice(0, 4).map((planet, index) => (
+                                                                        <Link
+                                                                            href={`/dashboard/exoplanet/${encodeURIComponent(planet.pl_name)}`}
+                                                                            key={planet.pl_name}
+                                                                        >
+                                                                            <div className="p-2">
+                                                                                <PlanetCard
+                                                                                    name={planet.pl_name}
+                                                                                    type={getPlanetType(planet)}
+                                                                                    habitabilityScore={getHabitabilityScore(planet)}
+                                                                                    terraformabilityScore={getTerraformabilityScore(planet)}
+                                                                                    index={index}
+                                                                                />
+                                                                            </div>
+                                                                        </Link>
                                                                     ))}
                                                                 </div>
                                                             </CardContent>
