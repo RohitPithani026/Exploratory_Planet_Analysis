@@ -11,10 +11,10 @@ export default function ExoplanetHabitabilityChart({ exoplanets }: ExoplanetHabi
     // Prepare data for the habitability chart
     const data = exoplanets.map((planet) => ({
         name: planet.pl_name,
-        habitability: (planet.habitability_score || 0),
+        habitability: planet.habitability_score || 0,
         esi: (planet.ESI || 0) * 100,
         water: (planet.pl_water_probability || 0) * 100,
-        terraformability: (planet.terraformability_score || 0) ,
+        terraformability: planet.terraformability_score || 0,
     }))
 
     return (
@@ -26,17 +26,16 @@ export default function ExoplanetHabitabilityChart({ exoplanets }: ExoplanetHabi
                         top: 20,
                         right: 30,
                         left: 20,
-                        bottom: 60,
+                        bottom: 60, // Increase bottom margin for better readability
                     }}
                 >
                     <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="rgba(255, 255, 255, 0.3)" />
                     <XAxis
                         dataKey="name"
-                        angle={-45}
-                        textAnchor="end"
-                        height={60}
+                        angle={0} // Slightly reduce tilt for readability
+                        height={80} // Increased height for clarity
                         tick={{ fontSize: 12, fill: "rgba(255, 255, 255, 0.8)" }}
-                        tickMargin={10}
+                        tickMargin={15}
                         stroke="rgba(255, 255, 255, 0.5)"
                     />
                     <YAxis
@@ -71,4 +70,3 @@ export default function ExoplanetHabitabilityChart({ exoplanets }: ExoplanetHabi
         </div>
     )
 }
-

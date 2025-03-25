@@ -628,28 +628,24 @@ export default function Dashboard() {
                                                         {
                                                             title: "Total Exoplanets",
                                                             value: statistics.totalPlanets.toLocaleString(),
-                                                            change: "+120",
                                                             icon: <Globe className="h-4 w-4 text-indigo-400" />,
                                                             color: "indigo",
                                                         },
                                                         {
                                                             title: "Habitable Planets",
                                                             value: statistics.habitablePlanets.toLocaleString(),
-                                                            change: "+12",
                                                             icon: <Star className="h-4 w-4 text-green-400" />,
                                                             color: "green",
                                                         },
                                                         {
                                                             title: "Terraformable Planets",
                                                             value: statistics.terraformablePlanets.toLocaleString(),
-                                                            change: "+35",
                                                             icon: <Rocket className="h-4 w-4 text-purple-400" />,
                                                             color: "purple",
                                                         },
                                                         {
                                                             title: "Data Accuracy",
                                                             value: `${statistics.dataAccuracy}%`,
-                                                            change: "+2.1%",
                                                             icon: <BarChart3 className="h-4 w-4 text-blue-400" />,
                                                             color: "blue",
                                                         },
@@ -673,10 +669,6 @@ export default function Dashboard() {
                                                                 </CardHeader>
                                                                 <CardContent className="relative z-10">
                                                                     <div className="text-2xl font-bold text-white">{item.value}</div>
-                                                                    <div className="flex items-center pt-1">
-                                                                        <span className="text-xs text-green-400">{item.change}</span>
-                                                                        <span className="ml-1 text-xs text-white/40">from last month</span>
-                                                                    </div>
                                                                 </CardContent>
                                                             </Card>
                                                         </motion.div>

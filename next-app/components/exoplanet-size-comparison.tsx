@@ -17,46 +17,48 @@ export default function ExoplanetSizeComparison({ exoplanets }: ExoplanetSizeCom
         const ctx = canvas.getContext("2d")
         if (!ctx) return
 
-        // Set canvas dimensions
         const dpr = window.devicePixelRatio || 1
         const rect = canvas.getBoundingClientRect()
-        canvas.width = rect.width * dpr
+
+        // Filter valid exoplanets
+        const validExoplanets = exoplanets.filter((planet) => planet.pl_rade !== null && planet.pl_rade !== undefined)
+        const sortedPlanets = [...validExoplanets].sort((a, b) => (b.pl_rade || 0) - (a.pl_rade || 0))
+
+        // Calculate required canvas width dynamically
+        const baseSize = 30
+        const maxRadius = Math.max(...sortedPlanets.map((p) => p.pl_rade || 0))
+        const scaleFactor = Math.min(baseSize, 200 / maxRadius)
+        const spacing = 20
+        const totalWidth = sortedPlanets.reduce((width, planet) => {
+            return width + (planet.pl_rade || 0) * scaleFactor * 2 + spacing
+        }, 150) // Initial padding
+
+        // Set canvas dimensions
+        canvas.width = Math.max(rect.width * dpr, totalWidth * dpr)
         canvas.height = rect.height * dpr
         ctx.scale(dpr, dpr)
 
         // Clear canvas
-        ctx.clearRect(0, 0, rect.width, rect.height)
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
 
         // Draw background grid
-        drawGrid(ctx, rect.width, rect.height)
+        drawGrid(ctx, canvas.width / dpr, rect.height)
 
         // Add a subtle glow effect
         ctx.shadowBlur = 15
         ctx.shadowColor = "rgba(59, 130, 246, 0.3)"
 
-        // Filter out exoplanets with missing radius data
-        const validExoplanets = exoplanets.filter((planet) => planet.pl_rade !== null && planet.pl_rade !== undefined)
-
-        // Sort planets by radius (largest first)
-        const sortedPlanets = [...validExoplanets].sort((a, b) => (b.pl_rade || 0) - (a.pl_rade || 0))
-
-        // Calculate scale factor - Earth (radius 1) will be 30px
-        const baseSize = 30
-        const maxRadius = Math.max(...sortedPlanets.map((p) => p.pl_rade || 0))
-        const scaleFactor = Math.min(baseSize, 200 / maxRadius)
-
         // Draw planets
         const centerY = rect.height / 2
-        let currentX = 80 // Starting position
-        const spacing = 20 // Space between planets
+        let currentX = 100 // Starting position
 
         // Draw Earth for reference
         drawPlanet(ctx, 50, centerY, baseSize, "Earth", 1, "#3b82f6")
 
         // Draw vertical line separator
         ctx.beginPath()
-        ctx.moveTo(70, 40)
-        ctx.lineTo(70, rect.height - 40)
+        ctx.moveTo(80, 40)
+        ctx.lineTo(80, rect.height - 40)
         ctx.strokeStyle = "rgba(100, 116, 139, 0.2)"
         ctx.stroke()
 
@@ -78,8 +80,10 @@ export default function ExoplanetSizeComparison({ exoplanets }: ExoplanetSizeCom
     }, [exoplanets])
 
     return (
-        <div className="w-full h-[400px] mt-4">
-            <canvas ref={canvasRef} className="w-full h-full" style={{ width: "100%", height: "100%" }} />
+        <div className="w-full overflow-x-auto mt-4">
+            <div className="relative w-fit min-w-[1380px] h-[500px]">
+                <canvas ref={canvasRef} className="w-full h-full" />
+            </div>
         </div>
     )
 }
@@ -154,4 +158,3 @@ function getHabitabilityColor(score: number): string {
     if (score >= 10) return "hsl(27, 96%, 61%)" // orange
     return "hsl(0, 84%, 60%)" // red
 }
-

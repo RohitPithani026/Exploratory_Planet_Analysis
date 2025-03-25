@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Slider } from "@/components/ui/slider"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
 import ExoplanetCard from "./exoplanet-card"
@@ -21,7 +20,6 @@ export default function ExoplanetComparison() {
     const [filteredExoplanets, setFilteredExoplanets] = useState<Exoplanet[]>([])
     const [allExoplanets, setAllExoplanets] = useState<Exoplanet[]>([])
     const [activeTab, setActiveTab] = useState("search")
-    const [habitabilityThreshold, setHabitabilityThreshold] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
     const { toast } = useToast()
 
@@ -53,15 +51,10 @@ export default function ExoplanetComparison() {
     }, [toast])
 
     useEffect(() => {
-        let filtered = allExoplanets.filter((planet) => planet.pl_name.toLowerCase().includes(searchQuery.toLowerCase()))
-
-        // Filter by habitability threshold if set
-        if (habitabilityThreshold > 0) {
-            filtered = filtered.filter((planet) => (planet.habitability_score || 0) >= habitabilityThreshold / 100)
-        }
+        const filtered = allExoplanets.filter((planet) => planet.pl_name.toLowerCase().includes(searchQuery.toLowerCase()))
 
         setFilteredExoplanets(filtered.slice(0, 12)) // Limit to 12 planets for the UI
-    }, [searchQuery, habitabilityThreshold, allExoplanets])
+    }, [searchQuery, allExoplanets])
 
     const handleSelectExoplanet = (exoplanet: Exoplanet) => {
         if (selectedExoplanets.some((p) => p.pl_name === exoplanet.pl_name)) {
@@ -102,6 +95,23 @@ export default function ExoplanetComparison() {
         return "Gas Giant"
     }
 
+    const getBadgeColor = (type: string) => {
+        switch (type) {
+            case "Earth-like":
+                return "bg-green-500/20 text-green-400 border-green-500/30"
+            case "Super-Earth":
+                return "bg-blue-500/20 text-blue-400 border-blue-500/30"
+            case "Neptune-like":
+                return "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
+            case "Gas Giant":
+                return "bg-purple-500/20 text-purple-400 border-purple-500/30"
+            case "Sub-Earth":
+                return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+            default:
+                return "bg-gray-500/20 text-gray-400 border-gray-500/30"
+        }
+    }
+
     return (
         <div className="space-y-6 dark">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -138,24 +148,12 @@ export default function ExoplanetComparison() {
                             />
                         </div>
 
-                        <div className="flex flex-col space-y-1 min-w-[200px]">
-                            <span className="text-xs text-white/70">Habitability Threshold: {habitabilityThreshold}%</span>
-                            <Slider
-                                value={[habitabilityThreshold]}
-                                onValueChange={(value) => setHabitabilityThreshold(value[0])}
-                                max={100}
-                                step={5}
-                                className="w-full"
-                            />
-                        </div>
-
-                        {(searchQuery || habitabilityThreshold > 0) && (
+                        {(searchQuery) && (
                             <Button
                                 variant="outline"
                                 className="border-white/10 bg-white/5 text-white hover:bg-white/10"
                                 onClick={() => {
                                     setSearchQuery("")
-                                    setHabitabilityThreshold(0)
                                 }}
                             >
                                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -222,8 +220,7 @@ export default function ExoplanetComparison() {
                                         <div className={`h-2 w-full ${getHabitabilityColor(habitabilityScore)}`} />
                                         <CardHeader className="pb-2">
                                             <div className="flex justify-between items-center">
-                                                <CardTitle className="text-lg flex items-center gap-2">
-                                                    {exoplanet.pl_name}
+                                            <CardTitle className="text-lg font-bold text-white">{exoplanet.pl_name}
                                                     {habitabilityScore > 50 && <Sparkles className="h-4 w-4 text-amber-500" />}
                                                 </CardTitle>
                                                 {isSelected && (
@@ -233,7 +230,8 @@ export default function ExoplanetComparison() {
                                                 )}
                                             </div>
                                             <CardDescription>
-                                                {planetType} {waterProbability > 0.5 ? "• Potential water present" : ""}
+                                                <Badge className={getBadgeColor(planetType)}>{planetType}</Badge>
+                                                {waterProbability > 0.5 ? "• Potential water present" : ""}
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent>
@@ -253,8 +251,7 @@ export default function ExoplanetComparison() {
                                                             className={`h-full ${getHabitabilityColor(habitabilityScore)}`}
                                                             style={{ width: `${Math.max(5, habitabilityScore)}%` }}
                                                         />
-                                                    </div>
-                                                    {/* <span className="text-xs">{(habitabilityScore).toFixed(0)}%</span> */}
+                                                    </div>  
                                                 </div>
                                                 <Button
                                                     variant="ghost"
@@ -277,7 +274,6 @@ export default function ExoplanetComparison() {
                                         className="mt-4 border-slate-700"
                                         onClick={() => {
                                             setSearchQuery("")
-                                            setHabitabilityThreshold(0)
                                         }}
                                     >
                                         Reset Filters
