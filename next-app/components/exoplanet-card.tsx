@@ -39,9 +39,9 @@ export default function ExoplanetCard({ exoplanet, onRemove }: ExoplanetCardProp
                 </div>
                 <CardDescription className="flex items-center gap-1">
                     <span className={`inline-block w-2 h-2 rounded-full ${getHabitabilityColor(habitabilityScore)}`}></span>
-                    {habitabilityScore > 0.7
+                    {habitabilityScore > 50
                         ? "Potentially Habitable"
-                        : habitabilityScore > 0.4
+                        : habitabilityScore > 30
                             ? "Moderate Habitability"
                             : "Low Habitability"}
                 </CardDescription>
@@ -57,7 +57,7 @@ export default function ExoplanetCard({ exoplanet, onRemove }: ExoplanetCardProp
                         />
                         <div className="flex justify-between text-xs">
                             <span>0</span>
-                            <span>{(habitabilityScore * 100).toFixed(0)}%</span>
+                            <span>{(habitabilityScore).toFixed(0)}%</span>
                             <span>100</span>
                         </div>
                     </div>
@@ -167,10 +167,10 @@ export default function ExoplanetCard({ exoplanet, onRemove }: ExoplanetCardProp
                             <h4 className="text-sm font-medium flex items-center gap-1">
                                 <span className="text-blue-500">✦</span> Terraformability
                             </h4>
-                            <Progress value={terraformabilityScore * 100} className="h-2" indicatorClassName="bg-blue-500" />
+                            <Progress value={terraformabilityScore} className="h-2" indicatorClassName="bg-blue-500" />
                             <div className="flex justify-between text-xs">
                                 <span>Low</span>
-                                <span>{(terraformabilityScore * 100).toFixed(0)}%</span>
+                                <span>{(terraformabilityScore).toFixed(0)}%</span>
                                 <span>High</span>
                             </div>
                         </div>
@@ -183,9 +183,9 @@ export default function ExoplanetCard({ exoplanet, onRemove }: ExoplanetCardProp
 
 // Helper function for habitability color gradient
 function getHabitabilityColor(score: number): string {
-    if (score >= 0.8) return "bg-emerald-500"
-    if (score >= 0.6) return "bg-green-500"
-    if (score >= 0.4) return "bg-yellow-500"
-    if (score >= 0.2) return "bg-orange-500"
+    if (score >= 70) return "bg-emerald-500"
+    if (score >= 50) return "bg-green-500"
+    if (score >= 30) return "bg-yellow-500"
+    if (score >= 10) return "bg-orange-500"
     return "bg-red-500"
 }

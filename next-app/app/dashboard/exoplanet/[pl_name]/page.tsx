@@ -29,12 +29,10 @@ import { useTheme } from "@/components/theme-provider"
 import { useToast } from "@/hooks/use-toast"
 import { ParticleBackground } from "@/components/particle-background"
 import { SpaceBackground } from "@/components/space-background"
-import { AIImageGallery } from "@/components/ai-image-gallery"
 import { OrbitVisualization } from "@/components/orbit-visualization"
 import { HabitabilityGauge } from "@/components/habitability-gauge"
 import { PlanetVisualization } from "@/components/planet-visualization"
 import { useAIContent } from "@/hooks/use-ai-content"
-import { useAIImages } from "@/hooks/use-ai-images"
 import { ShareDialog } from "@/components/share-dialog"
 import { ImportDataDialog } from "@/components/import-data-dialog"
 interface ExoplanetData {
@@ -56,8 +54,6 @@ export default function ExoplanetDetailsPage() {
 
     // Use our custom hooks for AI-generated content
     const { summary, isLoadingSummary, generateSummary } = useAIContent(exoplanet)
-
-    const { images, isLoading: isLoadingImages, error: imagesError, generateImages } = useAIImages(exoplanet)
 
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
@@ -873,13 +869,6 @@ export default function ExoplanetDetailsPage() {
                                 transition={{ duration: 0.5, delay: 1 }}
                                 className="px-8"
                             >
-                                <AIImageGallery
-                                    images={images}
-                                    isLoading={isLoadingImages}
-                                    error={imagesError}
-                                    onGenerate={generateImages}
-                                    planetName={exoplanet.pl_name as string}
-                                />
                             </motion.div>
 
                             <motion.div

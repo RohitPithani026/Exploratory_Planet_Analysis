@@ -62,9 +62,9 @@ export default function ExoplanetBarChart({ exoplanets, property, title }: Exopl
 
 // Helper function for habitability color gradient
 function getHabitabilityColor(score: number): string {
-    if (score >= 0.8) return "hsl(152, 75%, 40%)" // emerald
-    if (score >= 0.6) return "hsl(142, 71%, 45%)" // green
-    if (score >= 0.4) return "hsl(48, 96%, 53%)" // yellow
-    if (score >= 0.2) return "hsl(27, 96%, 61%)" // orange
+    if (score >= 70) return "hsl(152, 75%, 40%)" // emerald
+    if (score >= 50) return "hsl(142, 71%, 45%)" // green
+    if (score >= 30) return "hsl(48, 96%, 53%)" // yellow
+    if (score >= 10) return "hsl(27, 96%, 61%)" // orange
     return "hsl(0, 84%, 60%)" // red
 }

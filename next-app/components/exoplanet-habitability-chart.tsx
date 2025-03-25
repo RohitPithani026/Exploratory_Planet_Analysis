@@ -11,14 +11,14 @@ export default function ExoplanetHabitabilityChart({ exoplanets }: ExoplanetHabi
     // Prepare data for the habitability chart
     const data = exoplanets.map((planet) => ({
         name: planet.pl_name,
-        habitability: (planet.habitability_score || 0) * 100,
+        habitability: (planet.habitability_score || 0),
         esi: (planet.ESI || 0) * 100,
         water: (planet.pl_water_probability || 0) * 100,
-        terraformability: (planet.terraformability_score || 0) * 100,
+        terraformability: (planet.terraformability_score || 0) ,
     }))
 
     return (
-        <div className="w-full h-[400px]">
+        <div className="w-full h-[500px]">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
@@ -29,39 +29,39 @@ export default function ExoplanetHabitabilityChart({ exoplanets }: ExoplanetHabi
                         bottom: 60,
                     }}
                 >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="hsl(var(--muted-foreground))" />
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.1} stroke="rgba(255, 255, 255, 0.3)" />
                     <XAxis
                         dataKey="name"
                         angle={-45}
                         textAnchor="end"
                         height={60}
-                        tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+                        tick={{ fontSize: 12, fill: "rgba(255, 255, 255, 0.8)" }}
                         tickMargin={10}
-                        stroke="hsl(var(--muted-foreground))"
+                        stroke="rgba(255, 255, 255, 0.5)"
                     />
                     <YAxis
-                        tick={{ fill: "hsl(var(--foreground))" }}
-                        stroke="hsl(var(--muted-foreground))"
+                        tick={{ fill: "rgba(255, 255, 255, 0.8)" }}
+                        stroke="rgba(255, 255, 255, 0.5)"
                         label={{
                             value: "Score (%)",
                             angle: -90,
                             position: "insideLeft",
-                            fill: "hsl(var(--foreground))",
+                            fill: "rgba(255, 255, 255, 0.8)",
                         }}
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: "hsl(var(--background))",
-                            borderColor: "hsl(var(--border))",
+                            backgroundColor: "rgba(15, 23, 42, 0.9)",
+                            borderColor: "rgba(100, 116, 139, 0.5)",
                             borderRadius: "0.5rem",
-                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.5)",
                             padding: "8px 12px",
-                            color: "hsl(var(--foreground))",
+                            color: "rgba(255, 255, 255, 0.9)",
                         }}
                         formatter={(value) => [`${value}%`]}
                         cursor={{ fill: "rgba(255, 255, 255, 0.05)" }}
                     />
-                    <Legend />
+                    <Legend wrapperStyle={{ color: "rgba(255, 255, 255, 0.8)" }} />
                     <Bar dataKey="habitability" name="Habitability" fill="#10b981" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="esi" name="Earth Similarity" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="water" name="Water Probability" fill="#06b6d4" radius={[4, 4, 0, 0]} />
@@ -71,3 +71,4 @@ export default function ExoplanetHabitabilityChart({ exoplanets }: ExoplanetHabi
         </div>
     )
 }
+
