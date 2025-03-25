@@ -20,6 +20,7 @@ import { PlanetCard } from "@/components/planet-card"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { useTheme } from "@/components/theme-provider"
 import { useToast } from "@/hooks/use-toast"
+import ExoplanetComparison from "@/components/exoplanet-comparison"
 
 type Exoplanet = {
     pl_name: string
@@ -585,7 +586,7 @@ export default function Dashboard() {
                             )}
 
                             <Tabs defaultValue="overview" className="space-y-4" value={activeTab} onValueChange={handleTabChange}>
-                                <TabsList className="grid w-full grid-cols-3 md:w-auto gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+                                <TabsList className="grid w-full grid-cols-4 md:w-auto gap-1 rounded-full border border-white/10 bg-white/5 p-1">
                                     <TabsTrigger
                                         value="overview"
                                         className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
@@ -603,6 +604,12 @@ export default function Dashboard() {
                                         className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
                                     >
                                         Terraforming
+                                    </TabsTrigger>
+                                    <TabsTrigger
+                                        value="compare-exoplanets"
+                                        className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
+                                    >
+                                        Compare Exoplanets
                                     </TabsTrigger>
                                 </TabsList>
 
@@ -960,6 +967,33 @@ export default function Dashboard() {
                                                                     </motion.div>
                                                                 </div>
                                                             </div>
+                                                        </CardContent>
+                                                    </Card>
+                                                </motion.div>
+                                            </TabsContent>
+                                        )}
+                                        {activeTab === "compare-exoplanets" && (
+                                            <TabsContent value="compare-exoplanets" className="space-y-4 mt-0">
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 20 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ duration: 0.3 }}
+                                                >
+                                                    <Card
+                                                        className={`border-white/10 bg-black/30 ${blurEffects ? "backdrop-blur-sm" : ""} shadow-xl overflow-hidden relative group`}
+                                                    >
+                                                        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                                        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                                        <CardHeader className="relative z-10">
+                                                            <CardTitle className="text-white">Exoplanet Comparison Tool</CardTitle>
+                                                            <CardDescription className="text-white/60">
+                                                                Explore and compare the physical properties, habitability,
+                                                                and stellar characteristics of exoplanets discovered across
+                                                                our galaxy.
+                                                            </CardDescription>
+                                                        </CardHeader>
+                                                        <CardContent className="relative z-10">
+                                                            <ExoplanetComparison />
                                                         </CardContent>
                                                     </Card>
                                                 </motion.div>

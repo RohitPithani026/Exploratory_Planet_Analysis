@@ -451,6 +451,12 @@ export default function ExoplanetsPage() {
                             >
                                 Earth-like
                             </TabsTrigger>
+                            <TabsTrigger
+                                value="compare-exoplanets"
+                                className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70"
+                            >
+                                Compare Exoplanets
+                            </TabsTrigger>
                         </TabsList>
 
                         <div className="flex flex-wrap gap-2 mb-4">
@@ -974,7 +980,7 @@ export default function ExoplanetsPage() {
                     </div>
                 </div>
             </div >
-        </div>
+        </div >
     )
 }
 
