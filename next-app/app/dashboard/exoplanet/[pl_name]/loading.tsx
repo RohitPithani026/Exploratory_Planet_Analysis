@@ -1,11 +1,9 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { CosmicBackground } from "@/components/cosmic-background"
 
 export default function ExoplanetDetailsLoading() {
     return (
         <div className="relative min-h-screen">
-            <CosmicBackground>
                 <div className="container py-6 space-y-6 relative z-10">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <Skeleton className="h-9 w-36 bg-white/5" />
@@ -82,7 +80,6 @@ export default function ExoplanetDetailsLoading() {
                         </CardContent>
                     </Card>
                 </div>
-            </CosmicBackground>
         </div>
     )
 }
