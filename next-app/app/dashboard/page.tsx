@@ -585,34 +585,34 @@ export default function Dashboard() {
                                 </motion.div>
                             )}
 
-                            <Tabs defaultValue="overview" className="space-y-4" value={activeTab} onValueChange={handleTabChange}>
-                                <TabsList className="grid w-full grid-cols-4 md:w-auto gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+                            <Tabs defaultValue="overview" className="space-y-4 " value={activeTab} onValueChange={handleTabChange}>
+                            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 full border border-white/10 bg-white/5 p-1">
                                     <TabsTrigger
                                         value="overview"
-                                        className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
+                                        className="full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
                                     >
                                         Overview
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="habitability"
-                                        className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
+                                        className="full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
                                     >
                                         Habitability
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="terraforming"
-                                        className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
+                                        className="full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
                                     >
                                         Terraforming
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="compare-exoplanets"
-                                        className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
+                                        className="full data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300"
                                     >
                                         Compare Exoplanets
                                     </TabsTrigger>
                                 </TabsList>
-
+                                
                                 <AnimatePresence mode="wait">
                                     <motion.div
                                         key={activeTab}

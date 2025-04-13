@@ -106,7 +106,7 @@ export default function Home() {
           </div>
 
           {/* Add rotating planet */}
-          <RotatingPlanet size={1200} position="right" />
+          <RotatingPlanet position="right" />
 
           <div className="container relative px-4 md:px-6">
             <div className="flex flex-col items-center space-y-8 text-center">

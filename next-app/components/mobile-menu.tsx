@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { MenuPortal } from "@/components/MenuPortal"
 
 interface MobileMenuProps {
     links: {
@@ -15,7 +16,6 @@ interface MobileMenuProps {
 export function MobileMenu({ links }: MobileMenuProps) {
     const [isOpen, setIsOpen] = useState(false)
 
-    // Close menu when resizing to desktop
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth >= 768) {
@@ -27,7 +27,6 @@ export function MobileMenu({ links }: MobileMenuProps) {
         return () => window.removeEventListener("resize", handleResize)
     }, [])
 
-    // Prevent scrolling when menu is open
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = "hidden"
@@ -53,9 +52,9 @@ export function MobileMenu({ links }: MobileMenuProps) {
             </Button>
 
             {isOpen && (
-                <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm">
-                    <div className="container py-4 flex flex-col h-full">
-                        <div className="flex justify-end mb-6">
+                <MenuPortal>
+                    <div className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex flex-col">
+                        <div className="flex justify-end p-4">
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -67,44 +66,47 @@ export function MobileMenu({ links }: MobileMenuProps) {
                             </Button>
                         </div>
 
-                        <nav className="flex flex-col gap-2 flex-1">
-                            {links.map((link) => (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    className="text-lg font-medium text-white/70 transition-colors hover:text-white py-3 border-b border-white/10"
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    {link.label}
-                                </Link>
-                            ))}
-                        </nav>
+                        <div className="flex flex-col justify-center items-center text-center px-4 space-y-8">
+                            {/* Navigation Links */}
+                            <nav className="flex flex-col gap-4 w-full max-w-xs">
+                                {links.map((link) => (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className="text-lg font-medium text-white/70 transition-colors hover:text-white py-2 border-b border-white/10"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                            </nav>
 
-                        <div className="flex flex-col gap-4 pt-4 mt-auto">
-                            <Link href="/signin" className="w-full">
-                                <Button
-                                    variant="outline"
-                                    size="lg"
-                                    className="w-full text-white border-white/20 hover:bg-white/10"
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    Sign In
-                                </Button>
-                            </Link>
-                            <Link href="/signup" className="w-full">
-                                <Button
-                                    size="lg"
-                                    className="w-full relative overflow-hidden rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg transition-all duration-300 hover:shadow-indigo-500/25"
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    <span className="relative z-10">Sign Up</span>
-                                </Button>
-                            </Link>
+                            {/* Sign In & Sign Up */}
+                            <div className="flex flex-col gap-4 w-full max-w-xs">
+                                <Link href="/signin">
+                                    <Button
+                                        variant="outline"
+                                        size="lg"
+                                        className="w-full text-white border-white/20 hover:bg-white/10"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        Sign In
+                                    </Button>
+                                </Link>
+                                <Link href="/signup">
+                                    <Button
+                                        size="lg"
+                                        className="w-full relative overflow-hidden rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg transition-all duration-300 hover:shadow-indigo-500/25"
+                                        onClick={() => setIsOpen(false)}
+                                    >
+                                        <span className="relative z-10">Sign Up</span>
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </MenuPortal>
             )}
         </div>
     )
 }
-
