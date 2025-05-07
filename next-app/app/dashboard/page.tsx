@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
-import { BarChart3, ChevronRight, Globe, Menu, Moon, Search, Star, Sun, User, Rocket, RefreshCw } from "lucide-react"
+import { BarChart3, ChevronRight, Globe, Menu, Search, Star, User, Rocket, RefreshCw } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { ParticleBackground } from "@/components/particle-background"
 import { SpaceBackground } from "@/components/space-background"
@@ -50,7 +49,7 @@ type Exoplanet = {
 
 export default function Dashboard() {
     const { data: session } = useSession()
-    const { theme, setTheme, animations, particleEffects, blurEffects } = useTheme()
+    const { theme, animations, particleEffects, blurEffects } = useTheme()
     const { toast } = useToast()
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [progress, setProgress] = useState(13)
@@ -184,10 +183,6 @@ export default function Dashboard() {
             window.removeEventListener("mousemove", handleMouseMove)
         }
     }, [toast])
-
-    const toggleTheme = () => {
-        setTheme(theme === "light" ? "dark" : "light")
-    }
 
     const handleTabChange = (value: string) => {
         setActiveTab(value)
@@ -448,25 +443,6 @@ export default function Dashboard() {
                                     </div>
                                 </div>
                             </form>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={toggleTheme}
-                                            className="text-white hover:bg-white/10 relative group"
-                                        >
-                                            <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                            {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                                            <span className="sr-only">Toggle theme</span>
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Toggle theme</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
 
                             <HoverCard>
                                 <HoverCardTrigger asChild>

@@ -15,7 +15,6 @@ import {
     Orbit,
     Droplets,
     Zap,
-    Moon,
     Globe,
     Sparkles,
     Compass,
@@ -50,7 +49,7 @@ export default function ExoplanetDetailsPage() {
     const { animations, particleEffects } = useTheme()
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const containerRef = useRef<HTMLDivElement>(null)
-    const [theme, setTheme] = useState<"light" | "dark">("dark")
+    const [theme] = useState<"light" | "dark">("dark")
 
     // Use our custom hooks for AI-generated content
     const { summary, isLoadingSummary, generateSummary } = useAIContent(exoplanet)
@@ -99,12 +98,6 @@ export default function ExoplanetDetailsPage() {
 
         fetchExoplanetData()
     }, [pl_name, toast])
-
-    const toggleTheme = () => {
-        const newTheme = theme === "light" ? "dark" : "light"
-        setTheme(newTheme)
-        document.documentElement.classList.toggle("dark")
-    }
 
     const getHabitabilityColor = (score: number) => {
         if (score > 70) return "text-green-400"
@@ -384,16 +377,6 @@ export default function ExoplanetDetailsPage() {
                         </Button>
 
                         <div className="flex flex-wrap gap-2">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={toggleTheme}
-                                className="text-white hover:bg-white/10 relative group"
-                            >
-                                <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                                <span className="sr-only">Toggle theme</span>
-                            </Button>
 
                             {exoplanet && (
                                 <>

@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Calendar, ChevronRight, Edit, Globe, Mail, MapPin, Moon, Star, Sun, Save, X, LogOut } from "lucide-react"
+import { Calendar, ChevronRight, Edit, Globe, Mail, MapPin, Star, Save, X, LogOut } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
@@ -41,7 +41,7 @@ interface UserProfile {
 export default function ProfilePage() {
     const { data: session } = useSession()
     const { toast } = useToast()
-    const { theme, setTheme, animations, particleEffects, blurEffects } = useTheme()
+    const { theme, animations, particleEffects, blurEffects } = useTheme()
     const containerRef = useRef<HTMLDivElement>(null)
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [isEditing, setIsEditing] = useState(false)
@@ -167,11 +167,6 @@ export default function ProfilePage() {
         }
     }
 
-    const toggleTheme = () => {
-        const newTheme = theme === "light" ? "dark" : "light"
-        setTheme(newTheme)
-    }
-
     return (
         <div className={theme === "dark" ? "dark" : ""} ref={containerRef}>
             <div className="relative flex min-h-screen flex-col bg-[#030014] dark:bg-[#030014] text-white overflow-hidden">
@@ -231,16 +226,6 @@ export default function ProfilePage() {
                             </nav>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={toggleTheme}
-                                className="text-white hover:bg-white/10 relative group"
-                            >
-                                <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                                <span className="sr-only">Toggle theme</span>
-                            </Button>
 
                             <HoverCard>
                                 <HoverCardTrigger asChild>

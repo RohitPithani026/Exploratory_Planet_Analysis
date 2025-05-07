@@ -19,8 +19,6 @@ import {
     Scale, Ruler,
     ArrowUpDown,
     RefreshCw,
-    Moon,
-    Sun,
     ChevronLeft,
     ChevronRight,
     ChevronsLeft,
@@ -91,16 +89,10 @@ export default function ExoplanetsPage() {
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
     const { particleEffects, blurEffects, animations } = useTheme()
     const { data: session } = useSession()
-    const [theme, setTheme] = useState<"light" | "dark">("dark")
+    const [theme] = useState<"light" | "dark">("dark")
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const { toast } = useToast()
     const containerRef = useRef<HTMLDivElement>(null)
-
-    const toggleTheme = () => {
-        const newTheme = theme === "light" ? "dark" : "light"
-        setTheme(newTheme)
-        document.documentElement.classList.toggle("dark")
-    }
 
     const ExpoPlanets = localStorage.setItem("totalExpoPlanets", pagination.totalItems.toLocaleString())
     console.log(ExpoPlanets)
@@ -321,16 +313,6 @@ export default function ExoplanetsPage() {
                             </nav>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={toggleTheme}
-                                className="text-white hover:bg-white/10 relative group"
-                            >
-                                <div className="absolute inset-0 rounded-full bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                                <span className="sr-only">Toggle theme</span>
-                            </Button>
 
                             <HoverCard>
                                 <HoverCardTrigger asChild>
@@ -432,7 +414,7 @@ export default function ExoplanetsPage() {
                     </div>
 
                     <Tabs defaultValue="all" className="space-y-6">
-                        <TabsList className="bg-white/5 border border-white/10 p-0.5">
+                        <TabsList className="grid w-full grid-cols-3 bg-white/5 border border-white/10 p-0.5">
                             <TabsTrigger
                                 value="all"
                                 className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-white/70"
