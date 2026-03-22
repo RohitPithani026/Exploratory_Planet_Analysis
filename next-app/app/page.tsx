@@ -50,7 +50,7 @@ export default function Home() {
       <SpaceBackground />
 
       <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-        <div className="container flex h-16 items-center justify-between p-8">
+        <div className="mx-auto max-w-7xl flex h-20 items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <div className="relative">
               <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur"></div>
@@ -81,14 +81,14 @@ export default function Home() {
 
           <div className="hidden md:flex items-center gap-4">
             <Link href="/signin">
-              <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+              <Button variant="ghost" size="lg" className="h-12 px-8 text-white hover:bg-white/10">
                 Sign In
               </Button>
             </Link>
             <Link href="/signup">
               <Button
-                size="sm"
-                className="relative overflow-hidden rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg transition-all duration-300 hover:shadow-indigo-500/25"
+                size="lg"
+                className="h-12 px-8 relative overflow-hidden rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg transition-all duration-300 hover:shadow-indigo-500/25"
               >
                 <span className="relative z-10">Sign Up</span>
               </Button>
@@ -108,33 +108,33 @@ export default function Home() {
           {/* Add rotating planet */}
           <RotatingPlanet position="right" />
 
-          <div className="container relative px-4 md:px-6">
+          <div className="mx-auto max-w-7xl relative px-6">
             <div className="flex flex-col items-center space-y-8 text-center">
               <div className="space-y-4">
                 <h1 className="animate-fade-up bg-gradient-to-br from-white to-indigo-200 bg-clip-text text-4xl font-bold tracking-tighter text-transparent sm:text-5xl md:text-6xl lg:text-7xl/none">
                   Discover Habitable Exoplanets
                 </h1>
-                <p className="mx-auto max-w-[700px] text-white/70 md:text-xl">
+                <p className="mx-auto max-w-2xl text-white/70 text-lg md:text-xl leading-relaxed">
                   Using AI and Machine Learning to analyze NASA&apos;s Exoplanet Archive data and predict habitability and
                   terraformability scores.
                 </p>
 
               </div>
-              <div className="space-x-4">
+              <div className="flex flex-wrap items-center justify-center gap-4">
                 <Link href="/signup">
                   <Button
                     size="lg"
-                    className="relative overflow-hidden rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg transition-all duration-300 hover:shadow-indigo-500/25"
+                    className="h-12 px-8 inline-flex items-center justify-center relative overflow-hidden rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg transition-all duration-300 hover:shadow-indigo-500/25"
                   >
                     <span className="relative z-10">Get Started</span>
-                    <ArrowRight className="relative z-10 ml-2 h-4 w-4" />
+                    <ArrowRight className="relative z-10 ml-2 h-4 w-4 flex-shrink-0" />
                   </Button>
                 </Link>
                 <Link href="#about">
                   <Button
                     variant="outline"
                     size="lg"
-                    className="relative overflow-hidden rounded-full bg-gradient-to-r from-gray-600 to-gray-800 text-white shadow-lg transition-all duration-300 hover:shadow-gray-500/25"
+                    className="h-12 px-8 inline-flex items-center justify-center relative overflow-hidden rounded-full bg-gradient-to-r from-gray-600 to-gray-800 text-white shadow-lg transition-all duration-300 hover:shadow-gray-500/25"
                   >
                     Learn More
                   </Button>
@@ -145,23 +145,23 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#030014] to-transparent"></div>
         </section>
 
-        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-[#030014]">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="inline-block rounded-full bg-white/5 px-3 py-1 text-sm text-indigo-300 backdrop-blur">
+        <section id="features" className="w-full pt-6 md:pt-8 lg:pt-12 pb-12 md:pb-24 lg:pb-32 bg-[#030014]">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="flex flex-col items-center justify-center space-y-6 text-center">
+              <div className="inline-block rounded-full bg-white/5 px-4 py-2 text-sm text-indigo-300 backdrop-blur">
                 <span className="mr-2 inline-block h-2 w-2 rounded-full bg-indigo-400"></span>
                 Cutting-edge Technology
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <h2 className="bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-3xl font-bold tracking-tighter text-transparent sm:text-5xl">
                   Key Features
                 </h2>
-                <p className="mx-auto max-w-[700px] text-white/60 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <p className="mx-auto max-w-2xl text-white/60 text-lg md:text-xl">
                   Our platform offers advanced tools for exoplanet analysis
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12 mt-12">
+            <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12 mt-16">
               <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-6 shadow-xl transition-all duration-300 hover:border-indigo-500/50 hover:shadow-indigo-500/10">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                 <div className="relative z-10">
@@ -205,9 +205,9 @@ export default function Home() {
 
         <section id="about" className="relative w-full overflow-hidden py-12 md:py-24 lg:py-32 bg-[#030014]">
           <div className="absolute top-0 right-0 -z-10 h-[600px] w-[600px] rounded-full bg-indigo-900/20 blur-[100px]"></div>
-          <div className="container px-4 md:px-6">
+          <div className="mx-auto max-w-7xl px-6">
             <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:grid-cols-2">
-              <div className="flex flex-col justify-center space-y-4">
+              <div className="flex flex-col items-center justify-center space-y-4">
                 <div className="inline-block rounded-full bg-white/5 px-3 py-1 text-sm text-indigo-300 backdrop-blur">
                   <span className="mr-2 inline-block h-2 w-2 rounded-full bg-indigo-400"></span>
                   Our Mission
@@ -247,21 +247,21 @@ export default function Home() {
           className="relative w-full overflow-hidden py-12 md:py-24 lg:py-32 bg-gradient-to-b from-[#030014] to-[#070024]"
         >
           <div className="absolute bottom-0 left-0 -z-10 h-[600px] w-[600px] rounded-full bg-purple-900/20 blur-[100px]"></div>
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="inline-block rounded-full bg-white/5 px-3 py-1 text-sm text-indigo-300 backdrop-blur">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="flex flex-col items-center justify-center space-y-6 text-center">
+              <div className="inline-block rounded-full bg-white/5 px-4 py-2 text-sm text-indigo-300 backdrop-blur">
                 <span className="mr-2 inline-block h-2 w-2 rounded-full bg-indigo-400"></span>
                 Scientific Approach
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <h2 className="bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-3xl font-bold tracking-tighter text-transparent sm:text-5xl">
                   Our Methodology
                 </h2>
-                <p className="mx-auto max-w-[700px] text-white/60 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                <p className="mx-auto max-w-2xl text-white/60 text-lg md:text-xl/relaxed">
                   How we analyze and score exoplanets for habitability and terraformability
                 </p>
               </div>
-              <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12 mt-12">
+              <div className="grid w-full grid-cols-1 gap-8 md:grid-cols-2 lg:gap-12 mt-12">
                 <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-black/30 p-8 shadow-xl transition-all duration-300 hover:border-indigo-500/50 hover:shadow-indigo-500/10">
                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
                   <div className="relative z-10">
@@ -332,12 +332,6 @@ export default function Home() {
             © 2025 ExoHabit. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="#" className="text-sm font-medium text-white/40 hover:text-white/70">
-              Terms
-            </Link>
-            <Link href="#" className="text-sm font-medium text-white/40 hover:text-white/70">
-              Privacy
-            </Link>
             <Link href="#" className="text-sm font-medium text-white/40 hover:text-white/70">
               Contact
             </Link>
