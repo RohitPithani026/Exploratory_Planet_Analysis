@@ -274,7 +274,7 @@ export default function ExoplanetsPage() {
                         initial={{ y: -20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.5 }}
-                        className="container flex h-16 items-center justify-between p-8"
+                        className="flex h-16 items-center justify-between p-8"
                     >
                         <div className="flex items-center gap-2 md:gap-4">
                             <Link href="/dashboard" className="flex items-center gap-2 group">
@@ -358,7 +358,7 @@ export default function ExoplanetsPage() {
                     </motion.div>
                 </header>
 
-                <div className="container py-6 space-y-8 relative z-10 pr-8 pl-8">
+                <div className="container mx-auto py-6 space-y-8 relative z-10 pr-8 pl-8">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight text-white">Exoplanets</h1>

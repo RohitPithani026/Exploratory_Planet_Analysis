@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface ExoplanetData {
     [key: string]: string | number | boolean | null
@@ -10,19 +10,33 @@ interface ExoplanetData {
 interface UseAIContentResult {
     summary: string | null
     imagePrompts: string[] | null
+    factCard: string | null
     isLoadingSummary: boolean
     isLoadingImages: boolean
+    isLoadingFactCard: boolean
     error: string | null
     generateSummary: () => Promise<void>
     generateImagePrompts: () => Promise<void>
+    generateFactCard: () => Promise<void>
 }
 
 export function useAIContent(exoplanetData: ExoplanetData | null): UseAIContentResult {
     const [summary, setSummary] = useState<string | null>(null)
     const [imagePrompts, setImagePrompts] = useState<string[] | null>(null)
+    const [factCard, setFactCard] = useState<string | null>(null)
     const [isLoadingSummary, setIsLoadingSummary] = useState<boolean>(false)
     const [isLoadingImages, setIsLoadingImages] = useState<boolean>(false)
+    const [isLoadingFactCard, setIsLoadingFactCard] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
+
+    // Reset all AI content when the planet changes (e.g. after import)
+    useEffect(() => {
+        setSummary(null)
+        setImagePrompts(null)
+        setFactCard(null)
+        setError(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [exoplanetData?.pl_name])
 
     const generateSummary = async () => {
         if (!exoplanetData) {
@@ -104,14 +118,56 @@ export function useAIContent(exoplanetData: ExoplanetData | null): UseAIContentR
         }
     }
 
+    const generateFactCard = async () => {
+        if (!exoplanetData) {
+            setError("No exoplanet data available")
+            return
+        }
+
+        setIsLoadingFactCard(true)
+        setError(null)
+
+        try {
+            const response = await fetch("/api/ai/generate-content", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    planetData: exoplanetData,
+                    contentType: "fact-card",
+                }),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to generate fact card")
+            }
+
+            if (data.success && data.summary) {
+                setFactCard(data.summary)
+            } else {
+                throw new Error("No fact card was generated")
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "An unknown error occurred")
+        } finally {
+            setIsLoadingFactCard(false)
+        }
+    }
+
     return {
         summary,
         imagePrompts,
+        factCard,
         isLoadingSummary,
         isLoadingImages,
+        isLoadingFactCard,
         error,
         generateSummary,
         generateImagePrompts,
+        generateFactCard,
     }
 }
 

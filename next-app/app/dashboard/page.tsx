@@ -330,7 +330,7 @@ export default function Dashboard() {
                         initial={{ y: -20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: animations ? 0.5 : 0 }}
-                        className="container flex h-16 items-center justify-between p-4 md:p-8"
+                        className="flex h-16 items-center justify-between p-4 md:p-8"
                     >
                         <div className="flex items-center gap-2 md:gap-4">
                             <Sheet>
@@ -489,7 +489,7 @@ export default function Dashboard() {
                 </header>
 
                 <main className="flex-1 p-4 md:p-6 z-10">
-                    <div className="container">
+                    <div className="container mx-auto">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
