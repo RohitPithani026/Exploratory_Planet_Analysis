@@ -2,13 +2,13 @@
 
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import type { Exoplanet } from "@/lib/types"
+import { ChartExplainer } from "@/components/chart-explainer"
 
 interface ExoplanetHabitabilityChartProps {
     exoplanets: Exoplanet[]
 }
 
 export default function ExoplanetHabitabilityChart({ exoplanets }: ExoplanetHabitabilityChartProps) {
-    // Prepare data for the habitability chart
     const data = exoplanets.map((planet) => ({
         name: planet.pl_name,
         habitability: planet.habitability_score || 0,
@@ -18,6 +18,11 @@ export default function ExoplanetHabitabilityChart({ exoplanets }: ExoplanetHabi
     }))
 
     return (
+        <ChartExplainer
+            chartType="habitability-bar"
+            chartLabel="Habitability Comparison"
+            chartData={data}
+        >
         <div className="w-full h-[500px]">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -68,5 +73,6 @@ export default function ExoplanetHabitabilityChart({ exoplanets }: ExoplanetHabi
                 </BarChart>
             </ResponsiveContainer>
         </div>
+        </ChartExplainer>
     )
 }

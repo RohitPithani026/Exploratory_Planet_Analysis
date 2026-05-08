@@ -72,7 +72,7 @@ export default function Home() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-white transition-colors hover:text-indigo-300"
+                className="relative text-base font-semibold transition-colors hover:text-indigo-300"
               >
                 {link.label}
               </Link>

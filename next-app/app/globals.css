@@ -4,6 +4,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Prevent white flash on load — app is always dark */
+html,
+body {
+  background-color: #030a1a;
+  color-scheme: dark;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

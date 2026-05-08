@@ -3,9 +3,8 @@
 import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
 import { motion } from "framer-motion"
-import { Calendar, ChevronRight, Edit, Globe, Mail, MapPin, Star, Save, X, LogOut } from "lucide-react"
+import { Calendar, ChevronRight, Edit, Mail, MapPin, Star, Save, X, LogOut } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 
 import { Button } from "@/components/ui/button"
@@ -21,7 +20,6 @@ import { useTheme } from "@/components/theme-provider"
 import { useToast } from "@/hooks/use-toast"
 import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 
 interface UserProfile {
     id: string
@@ -41,7 +39,7 @@ interface UserProfile {
 export default function ProfilePage() {
     const { data: session } = useSession()
     const { toast } = useToast()
-    const { theme, animations, particleEffects, blurEffects } = useTheme()
+    const { theme, animations, particleEffects } = useTheme()
     const containerRef = useRef<HTMLDivElement>(null)
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [isEditing, setIsEditing] = useState(false)
@@ -181,95 +179,6 @@ export default function ProfilePage() {
                         }}
                     />
                 )}
-
-                <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-                    <motion.div
-                        initial={{ y: -20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: animations ? 0.5 : 0 }}
-                        className="flex h-16 items-center justify-between p-8"
-                    >
-                        <div className="flex items-center gap-2 md:gap-4">
-                            <Link href="/dashboard" className="flex items-center gap-2 group">
-                                <div className="relative">
-                                    <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black">
-                                        <Globe className="h-5 w-5 text-indigo-400" />
-                                    </div>
-                                </div>
-                                <span className="bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-xl font-bold text-transparent hidden md:inline">
-                                    ExoHabit
-                                </span>
-                            </Link>
-                            <nav className="hidden md:flex items-center gap-6 text-sm">
-                                <Link
-                                    href="/dashboard"
-                                    className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Dashboard
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                                </Link>
-                                <Link
-                                    href="/dashboard/exoplanets"
-                                    className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Exoplanets
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                                </Link>
-                                <Link
-                                    href="/dashboard/profile"
-                                    className="font-medium text-white transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Profile
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"></span>
-                                </Link>
-                            </nav>
-                        </div>
-                        <div className="flex items-center gap-4">
-
-                            <HoverCard>
-                                <HoverCardTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
-                                    >
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
-                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.fullName?.charAt(0) || "U"}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </Button>
-                                </HoverCardTrigger>
-                                <HoverCardContent
-                                    className={`w-80 border-white/10 bg-black/80 text-white ${blurEffects ? "backdrop-blur-xl" : ""}`}
-                                >
-                                    <div className="flex justify-between space-x-4">
-                                        <Avatar className="h-12 w-12">
-                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=48&width=48"} />
-                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.fullName?.charAt(0) || "U"}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="space-y-1 flex-1">
-                                            <h4 className="text-sm font-semibold">{session?.user?.fullName || "John Doe"}</h4>
-                                            <p className="text-xs text-white/60">{session?.user?.email || "Exoplanet Researcher"}</p>
-                                            <div className="flex items-center pt-2">
-                                                <Link
-                                                    href="/dashboard/profile"
-                                                    className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center"
-                                                >
-                                                    View profile <ChevronRight className="h-3 w-3 ml-1" />
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </HoverCardContent>
-                            </HoverCard>
-                        </div>
-                    </motion.div>
-                </header>
 
                 <main className="flex-1 p-4 md:p-6 z-10">
                     <div className="container mx-auto">

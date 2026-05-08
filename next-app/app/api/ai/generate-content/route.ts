@@ -21,7 +21,16 @@ interface PlanetData {
 
 export async function POST(request: Request) {
     try {
-        const { planetData, contentType } = await request.json()
+        const body = await request.json()
+        const { contentType } = body
+
+        if (contentType === "explain-chart") {
+            const { chartType, chartLabel, chartData } = body
+            const text = await runAiUseCase("fact-card", buildChartExplainPrompt(chartType, chartLabel, chartData))
+            return NextResponse.json({ explanation: text, success: true })
+        }
+
+        const { planetData } = body
 
         if (!planetData) {
             return NextResponse.json({ error: "Planet data is required" }, { status: 400 })
@@ -67,6 +76,11 @@ export async function POST(request: Request) {
             { status: 500 }
         )
     }
+}
+
+function buildChartExplainPrompt(chartType: string, chartLabel: string, chartData: unknown): string {
+    const dataStr = JSON.stringify(chartData).slice(0, 800)
+    return `Explain the following ${chartLabel} chart to a curious non-scientist in 2–3 plain sentences. Focus on what the data means, not just what it shows. Chart type: ${chartType}. Data: ${dataStr}. Output only the explanation, no headings.`
 }
 
 function buildSummaryPrompt(p: PlanetData): string {

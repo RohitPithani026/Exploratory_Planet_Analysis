@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
+import { Bot, Sparkles } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,9 +26,7 @@ import {
     ChevronsRight,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useSession } from "next-auth/react"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { AiSidebar } from "@/components/ai-sidebar"
 
 type Exoplanet = {
     pl_name: string
@@ -71,6 +70,7 @@ type ApiResponse = {
 }
 
 export default function ExoplanetsPage() {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const [exoplanets, setExoplanets] = useState<Exoplanet[]>([])
     const [filteredPlanets, setFilteredPlanets] = useState<Exoplanet[]>([])
     const [pagination, setPagination] = useState<PaginationInfo>({
@@ -88,7 +88,6 @@ export default function ExoplanetsPage() {
     const [sortBy, setSortBy] = useState<string | null>(null)
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
     const { particleEffects, blurEffects, animations } = useTheme()
-    const { data: session } = useSession()
     const [theme] = useState<"light" | "dark">("dark")
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const { toast } = useToast()
@@ -268,95 +267,6 @@ export default function ExoplanetsPage() {
                         }}
                     />
                 )}
-
-                <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-                    <motion.div
-                        initial={{ y: -20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="flex h-16 items-center justify-between p-8"
-                    >
-                        <div className="flex items-center gap-2 md:gap-4">
-                            <Link href="/dashboard" className="flex items-center gap-2 group">
-                                <div className="relative">
-                                    <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black">
-                                        <Globe className="h-5 w-5 text-indigo-400" />
-                                    </div>
-                                </div>
-                                <span className="bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-xl font-bold text-transparent hidden md:inline">
-                                    ExoHabit
-                                </span>
-                            </Link>
-                            <nav className="hidden md:flex items-center gap-6 text-sm">
-                                <Link
-                                    href="/dashboard"
-                                    className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Dashboard
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                                </Link>
-                                <Link
-                                    href="/dashboard/exoplanets"
-                                    className="font-medium text-white transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Exoplanets
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"></span>
-                                </Link>
-                                <Link
-                                    href="/dashboard/profile"
-                                    className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Profile
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                                </Link>
-                            </nav>
-                        </div>
-                        <div className="flex items-center gap-4">
-
-                            <HoverCard>
-                                <HoverCardTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
-                                    >
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
-                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.fullName?.charAt(0) || "U"}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </Button>
-                                </HoverCardTrigger>
-                                <HoverCardContent
-                                    className={`w-80 border-white/10 bg-black/80 text-white ${blurEffects ? "backdrop-blur-xl" : ""}`}
-                                >
-                                    <div className="flex justify-between space-x-4">
-                                        <Avatar className="h-12 w-12">
-                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=48&width=48"} />
-                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.fullName?.charAt(0) || "U"}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="space-y-1 flex-1">
-                                            <h4 className="text-sm font-semibold">{session?.user?.fullName || "John Doe"}</h4>
-                                            <p className="text-xs text-white/60">{session?.user?.email || "Exoplanet Researcher"}</p>
-                                            <div className="flex items-center pt-2">
-                                                <Link
-                                                    href="/dashboard/profile"
-                                                    className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center"
-                                                >
-                                                    View profile <ChevronRight className="h-3 w-3 ml-1" />
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </HoverCardContent>
-                            </HoverCard>
-                        </div>
-                    </motion.div>
-                </header>
 
                 <div className="container mx-auto py-6 space-y-8 relative z-10 pr-8 pl-8">
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -956,6 +866,46 @@ export default function ExoplanetsPage() {
                     </div>
                 </div>
             </div >
+
+            {/* Floating Ask AI button */}
+            {!isSidebarOpen && (
+                <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", damping: 18, stiffness: 260, delay: 0.6 }}
+                    className="fixed bottom-7 right-7 z-[60]"
+                >
+                    <motion.span
+                        className="absolute inset-0 rounded-full"
+                        style={{ background: "rgba(139,92,246,0.35)" }}
+                        animate={{ scale: [1, 1.55], opacity: [0.6, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                    />
+                    <motion.span
+                        className="absolute inset-0 rounded-full"
+                        style={{ background: "rgba(99,102,241,0.25)" }}
+                        animate={{ scale: [1, 1.9], opacity: [0.5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0.5 }}
+                    />
+                    <motion.button
+                        onClick={() => setIsSidebarOpen(true)}
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.94 }}
+                        className="relative flex items-center gap-2.5 rounded-full px-5 py-3.5 font-display text-sm font-semibold text-white"
+                        style={{
+                            background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)",
+                            boxShadow: "0 0 0 1px rgba(139,92,246,0.4), 0 8px 32px rgba(109,40,217,0.55), 0 2px 8px rgba(0,0,0,0.4)",
+                        }}
+                    >
+                        <Bot className="h-4 w-4 text-violet-200" />
+                        Ask AI
+                        <Sparkles className="h-3.5 w-3.5 text-violet-200/70" />
+                    </motion.button>
+                </motion.div>
+            )}
+
+            <AiSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         </div >
     )
 }

@@ -2,24 +2,23 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { useSession } from "next-auth/react"
-import { BarChart3, ChevronRight, Globe, Menu, Search, Star, User, Rocket, RefreshCw } from "lucide-react"
+import { BarChart3, Globe, Search, Star, Rocket, Bot, Sparkles } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from "recharts"
 
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import { ParticleBackground } from "@/components/particle-background"
 import { SpaceBackground } from "@/components/space-background"
 import { PlanetCard } from "@/components/planet-card"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { useTheme } from "@/components/theme-provider"
 import { useToast } from "@/hooks/use-toast"
 import ExoplanetComparison from "@/components/exoplanet-comparison"
+import { AiSidebar } from "@/components/ai-sidebar"
 
 type Exoplanet = {
     pl_name: string
@@ -48,7 +47,6 @@ type Exoplanet = {
 }
 
 export default function Dashboard() {
-    const { data: session } = useSession()
     const { theme, animations, particleEffects, blurEffects } = useTheme()
     const { toast } = useToast()
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -70,6 +68,7 @@ export default function Dashboard() {
     })
 
     const containerRef = useRef<HTMLDivElement>(null)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
     // Calculate statistics from exoplanet data
     const calculateStatistics = (planets: Exoplanet[]) => {
@@ -287,6 +286,14 @@ export default function Dashboard() {
         return Math.min(Math.max(score, 0.1), 0.99) // Keep between 0.1 and 0.99
     }
 
+    const topPlanets = exoplanets
+        .filter(p => p.habitability_score != null && p.terraformability_score != null)
+        .sort((a, b) =>
+            (Number(b.habitability_score) + Number(b.terraformability_score)) -
+            (Number(a.habitability_score) + Number(a.terraformability_score))
+        )
+        .slice(0, 5)
+
     if (isLoading) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-[#030014]">
@@ -324,169 +331,6 @@ export default function Dashboard() {
                         }}
                     />
                 )}
-
-                <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-                    <motion.div
-                        initial={{ y: -20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: animations ? 0.5 : 0 }}
-                        className="flex h-16 items-center justify-between p-4 md:p-8"
-                    >
-                        <div className="flex items-center gap-2 md:gap-4">
-                            <Sheet>
-                                <SheetTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10">
-                                        <Menu className="h-5 w-5" />
-                                        <span className="sr-only">Toggle menu</span>
-                                    </Button>
-                                </SheetTrigger>
-                                <SheetContent
-                                    side="left"
-                                    className={`border-r border-white/10 bg-black/80 ${blurEffects ? "backdrop-blur-xl" : ""}`}
-                                >
-                                    <nav className="grid gap-6 text-lg font-medium">
-                                        <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold">
-                                            <div className="relative">
-                                                <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur"></div>
-                                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black">
-                                                    <Globe className="h-5 w-5 text-indigo-400" />
-                                                </div>
-                                            </div>
-                                            <span className="bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-                                                ExoHabit
-                                            </span>
-                                        </Link>
-                                        <Link
-                                            href="/dashboard"
-                                            className="flex items-center gap-2 text-white/70 transition-colors hover:text-white"
-                                        >
-                                            <BarChart3 className="h-5 w-5" />
-                                            <span>Dashboard</span>
-                                        </Link>
-                                        <Link
-                                            href="/dashboard/exoplanets"
-                                            className="flex items-center gap-2 text-white/70 transition-colors hover:text-white"
-                                        >
-                                            <Globe className="h-5 w-5" />
-                                            <span>Exoplanets</span>
-                                        </Link>
-                                        <Link
-                                            href="/dashboard/profile"
-                                            className="flex items-center gap-2 text-white/70 transition-colors hover:text-white"
-                                        >
-                                            <User className="h-5 w-5" />
-                                            <span>Profile</span>
-                                        </Link>
-                                    </nav>
-                                </SheetContent>
-                            </Sheet>
-                            <Link href="/dashboard" className="flex items-center gap-2 group">
-                                <div className="relative">
-                                    <div className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 opacity-75 blur group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-black">
-                                        <Globe className="h-5 w-5 text-indigo-400" />
-                                    </div>
-                                </div>
-                                <span className="bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-xl font-bold text-transparent hidden md:inline">
-                                    ExoHabit
-                                </span>
-                            </Link>
-                            <nav className="hidden md:flex items-center gap-6 text-sm">
-                                <Link
-                                    href="/dashboard"
-                                    className="font-medium text-white transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Dashboard
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                                </Link>
-                                <Link
-                                    href="/dashboard/exoplanets"
-                                    className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Exoplanets
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                                </Link>
-                                <Link
-                                    href="/dashboard/profile"
-                                    className="font-medium text-white/70 transition-colors hover:text-indigo-300 relative group"
-                                >
-                                    Profile
-                                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-indigo-500 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-                                </Link>
-                            </nav>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <form className="hidden md:flex">
-                                <div className="relative group">
-                                    <div className="flex flex-col sm:flex-row gap-4">
-                                        <div className="relative">
-                                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-white/50" />
-                                            <Input
-                                                type="search"
-                                                placeholder="Search exoplanets..."
-                                                className="w-full sm:w-[300px] bg-white/5 border-white/10 pl-8 text-white placeholder:text-white/50"
-                                                value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.target.value)}
-                                            />
-                                        </div>
-
-                                        {searchQuery && (
-                                            <Button
-                                                variant="outline"
-                                                className="border-white/10 bg-white/5 text-white hover:bg-white/10"
-                                                onClick={() => setSearchQuery("")}
-                                            >
-                                                <RefreshCw className="h-4 w-4 mr-2" />
-                                                Clear
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            </form>
-
-                            <HoverCard>
-                                <HoverCardTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300"
-                                    >
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=32&width=32"} alt="User" />
-                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.name?.charAt(0) || "U"}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </Button>
-                                </HoverCardTrigger>
-                                <HoverCardContent
-                                    className={`w-80 border-white/10 bg-black/80 text-white ${blurEffects ? "backdrop-blur-xl" : ""}`}
-                                >
-                                    <div className="flex justify-between space-x-4">
-                                        <Avatar className="h-12 w-12">
-                                            <AvatarImage src={session?.user?.image || "/placeholder.svg?height=48&width=48"} />
-                                            <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                                                {session?.user?.name?.charAt(0) || "U"}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="space-y-1 flex-1">
-                                            <h4 className="text-sm font-semibold">{session?.user?.name || "John Doe"}</h4>
-                                            <p className="text-xs text-white/60">{session?.user?.email || "Exoplanet Researcher"}</p>
-                                            <div className="flex items-center pt-2">
-                                                <Link
-                                                    href="/dashboard/profile"
-                                                    className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center"
-                                                >
-                                                    View profile <ChevronRight className="h-3 w-3 ml-1" />
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </HoverCardContent>
-                            </HoverCard>
-                        </div>
-                    </motion.div>
-                </header>
 
                 <main className="flex-1 p-4 md:p-6 z-10">
                     <div className="container mx-auto">
@@ -656,7 +500,7 @@ export default function Dashboard() {
                                                         initial={{ opacity: 0, y: 20 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         transition={{ duration: animations ? 0.3 : 0, delay: animations ? 0.4 : 0 }}
-                                                        className="lg:col-span-4"
+                                                        className="lg:col-span-4 h-[520px]"
                                                     >
                                                         <Card
                                                             className={`border-white/10 bg-black/30 ${blurEffects ? "backdrop-blur-sm" : ""} shadow-xl h-full overflow-hidden relative group`}
@@ -664,23 +508,56 @@ export default function Dashboard() {
                                                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                             <CardHeader className="relative z-10">
-                                                                <CardTitle className="text-white">Exoplanet Distribution</CardTitle>
+                                                                <CardTitle className="text-white">Top 5 by Score</CardTitle>
                                                                 <CardDescription className="text-white/60">
-                                                                    Distribution by star type and planetary class
+                                                                    Highest combined habitability &amp; terraformability
                                                                 </CardDescription>
                                                             </CardHeader>
-                                                            <CardContent className="relative z-10">
-                                                                <div className="relative h-80 w-full overflow-hidden rounded-lg border border-white/10 bg-black/50 p-6">
-                                                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent"></div>
-                                                                    <div className="relative z-10 flex h-full items-center justify-center">
-                                                                        <div className="space-y-2 text-center">
-                                                                            <div className="inline-block rounded-full bg-white/5 px-3 py-1 text-sm text-indigo-300 backdrop-blur">
-                                                                                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-indigo-400"></span>
-                                                                                Interactive Chart
-                                                                            </div>
-                                                                            <p className="text-white/40">Visualization would appear here</p>
-                                                                        </div>
-                                                                    </div>
+                                                            <CardContent className="relative z-10 h-[calc(100%-80px)]">
+                                                                <div className="relative w-full h-full overflow-hidden rounded-lg border border-white/10 bg-black/50 p-4">
+                                                                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent pointer-events-none"></div>
+                                                                    <ResponsiveContainer width="100%" height="100%">
+                                                                        <BarChart
+                                                                            data={topPlanets.map(p => ({
+                                                                                name: p.pl_name.length > 12 ? p.pl_name.slice(0, 10) + "…" : p.pl_name,
+                                                                                Habitability: Math.round(Number(p.habitability_score) || 0),
+                                                                                Terraformability: Math.round(Number(p.terraformability_score) || 0),
+                                                                            }))}
+                                                                            margin={{ top: 5, right: 10, left: -20, bottom: 60 }}
+                                                                        >
+                                                                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                                                                            <XAxis
+                                                                                dataKey="name"
+                                                                                tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 10 }}
+                                                                                angle={-38}
+                                                                                textAnchor="end"
+                                                                                interval={0}
+                                                                                tickLine={false}
+                                                                                axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
+                                                                            />
+                                                                            <YAxis
+                                                                                tick={{ fill: "rgba(255,255,255,0.35)", fontSize: 10 }}
+                                                                                tickLine={false}
+                                                                                axisLine={false}
+                                                                                domain={[0, 100]}
+                                                                                unit="%"
+                                                                            />
+                                                                            <Tooltip
+                                                                                contentStyle={{
+                                                                                    background: "rgba(10,12,26,0.95)",
+                                                                                    border: "1px solid rgba(124,58,237,0.3)",
+                                                                                    borderRadius: 8,
+                                                                                    color: "#fff",
+                                                                                    fontSize: 12,
+                                                                                }}
+                                                                                formatter={(value: number, name: string) => [`${value}%`, name]}
+                                                                                cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                                                                            />
+                                                                            <Legend wrapperStyle={{ color: "rgba(255,255,255,0.5)", fontSize: 11, paddingTop: 4 }} />
+                                                                            <Bar dataKey="Habitability" fill="#6366f1" radius={[3, 3, 0, 0]} maxBarSize={22} />
+                                                                            <Bar dataKey="Terraformability" fill="#10b981" radius={[3, 3, 0, 0]} maxBarSize={22} />
+                                                                        </BarChart>
+                                                                    </ResponsiveContainer>
                                                                 </div>
                                                             </CardContent>
                                                         </Card>
@@ -690,7 +567,7 @@ export default function Dashboard() {
                                                         initial={{ opacity: 0, y: 20 }}
                                                         animate={{ opacity: 1, y: 0 }}
                                                         transition={{ duration: animations ? 0.3 : 0, delay: animations ? 0.5 : 0 }}
-                                                        className="lg:col-span-3"
+                                                        className="lg:col-span-3 h-[520px]"
                                                     >
                                                         <Card
                                                             className={`border-white/10 bg-black/30 ${blurEffects ? "backdrop-blur-sm" : ""} shadow-xl h-full overflow-hidden relative group`}
@@ -698,17 +575,20 @@ export default function Dashboard() {
                                                             <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                             <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                                             <CardHeader className="relative z-10">
-                                                                <CardTitle className="text-white">Recent Discoveries</CardTitle>
-                                                                <CardDescription className="text-white/60">Newly discovered exoplanets</CardDescription>
+                                                                <CardTitle className="text-white">Top Discoveries</CardTitle>
+                                                                <CardDescription className="text-white/60">Best habitability &amp; terraformability</CardDescription>
                                                             </CardHeader>
-                                                            <CardContent className="relative z-10">
-                                                                <div className="space-y-6">
-                                                                    {filteredPlanets.slice(0, 4).map((planet, index) => (
+                                                            <CardContent className="relative z-10 p-0 h-[calc(100%-80px)]">
+                                                                <div
+                                                                    className="overflow-y-auto px-6 pb-4 space-y-3 h-full"
+                                                                    style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(139,92,246,0.2) transparent" }}
+                                                                >
+                                                                    {topPlanets.map((planet, index) => (
                                                                         <Link
                                                                             href={`/dashboard/exoplanet/${encodeURIComponent(planet.pl_name)}`}
                                                                             key={planet.pl_name}
                                                                         >
-                                                                            <div className="p-2">
+                                                                            <div className="p-1">
                                                                                 <PlanetCard
                                                                                     name={planet.pl_name}
                                                                                     type={getPlanetType(planet)}
@@ -974,6 +854,46 @@ export default function Dashboard() {
                     </div>
                 </main>
             </div>
+
+            {/* Floating Ask AI button */}
+            {!isSidebarOpen && (
+                <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", damping: 18, stiffness: 260, delay: 0.6 }}
+                    className="fixed bottom-7 right-7 z-[60]"
+                >
+                    <motion.span
+                        className="absolute inset-0 rounded-full"
+                        style={{ background: "rgba(139,92,246,0.35)" }}
+                        animate={{ scale: [1, 1.55], opacity: [0.6, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                    />
+                    <motion.span
+                        className="absolute inset-0 rounded-full"
+                        style={{ background: "rgba(99,102,241,0.25)" }}
+                        animate={{ scale: [1, 1.9], opacity: [0.5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0.5 }}
+                    />
+                    <motion.button
+                        onClick={() => setIsSidebarOpen(true)}
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.94 }}
+                        className="relative flex items-center gap-2.5 rounded-full px-5 py-3.5 font-display text-sm font-semibold text-white"
+                        style={{
+                            background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)",
+                            boxShadow: "0 0 0 1px rgba(139,92,246,0.4), 0 8px 32px rgba(109,40,217,0.55), 0 2px 8px rgba(0,0,0,0.4)",
+                        }}
+                    >
+                        <Bot className="h-4 w-4 text-violet-200" />
+                        Ask AI
+                        <Sparkles className="h-3.5 w-3.5 text-violet-200/70" />
+                    </motion.button>
+                </motion.div>
+            )}
+
+            <AiSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         </div>
     )
 }

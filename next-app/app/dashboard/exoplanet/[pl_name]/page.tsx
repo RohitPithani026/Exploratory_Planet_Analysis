@@ -4,9 +4,9 @@ import { useEffect, useState, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import {
-    ArrowLeft, Calendar, Info, Map, ThermometerSnowflake, Weight,
+    Calendar, Info, Map, ThermometerSnowflake, Weight,
     Star, Sun, Orbit, Globe, Sparkles, Compass, Zap,
-    ChevronDown, ChevronUp,
+    ChevronDown, ChevronUp, Bot,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +21,7 @@ import { PlanetVisualization } from "@/components/planet-visualization"
 import { useAIContent } from "@/hooks/use-ai-content"
 import { ShareDialog } from "@/components/share-dialog"
 import { ImportDataDialog } from "@/components/import-data-dialog"
+import { AiSidebar } from "@/components/ai-sidebar"
 
 interface ExoplanetData {
     [key: string]: string | number | boolean | null
@@ -42,6 +43,7 @@ export default function ExoplanetDetailsPage() {
 const [similarPlanets, setSimilarPlanets] = useState<SimilarPlanetEntry[]>([])
     const [loadingSimilar, setLoadingSimilar] = useState(false)
     const [isNarrativeExpanded, setIsNarrativeExpanded] = useState(false)
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const { animations, particleEffects } = useTheme()
 
     const containerRef = useRef<HTMLDivElement>(null)
@@ -293,6 +295,54 @@ const getPlanetColor = (type: string) => {
 
     return (
         <div ref={containerRef} className="relative">
+            {exoplanet && (
+                <AiSidebar
+                    planetData={exoplanet as Record<string, string | number | boolean | null>}
+                    isOpen={isSidebarOpen}
+                    onClose={() => setIsSidebarOpen(false)}
+                />
+            )}
+
+            {/* ── FLOATING ASK AI BUTTON ──────────────────────────── */}
+            {exoplanet && !isSidebarOpen && (
+                <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", damping: 18, stiffness: 260, delay: 0.6 }}
+                    className="fixed bottom-7 right-7 z-[60]"
+                >
+                    {/* Pulse rings */}
+                    <motion.span
+                        className="absolute inset-0 rounded-full"
+                        style={{ background: "rgba(139,92,246,0.35)" }}
+                        animate={{ scale: [1, 1.55], opacity: [0.6, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                    />
+                    <motion.span
+                        className="absolute inset-0 rounded-full"
+                        style={{ background: "rgba(99,102,241,0.25)" }}
+                        animate={{ scale: [1, 1.9], opacity: [0.5, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0.5 }}
+                    />
+
+                    <motion.button
+                        onClick={() => setIsSidebarOpen(true)}
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.94 }}
+                        className="relative flex items-center gap-2.5 rounded-full px-5 py-3.5 font-display text-sm font-semibold text-white"
+                        style={{
+                            background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%)",
+                            boxShadow:
+                                "0 0 0 1px rgba(139,92,246,0.4), 0 8px 32px rgba(109,40,217,0.55), 0 2px 8px rgba(0,0,0,0.4)",
+                        }}
+                    >
+                        <Bot className="h-4.5 w-4.5 text-violet-200" />
+                        Ask AI
+                        <Sparkles className="h-3.5 w-3.5 text-violet-200/70" />
+                    </motion.button>
+                </motion.div>
+            )}
             <div className="relative min-h-screen space-bg">
                 <div className="absolute inset-0 nebula-bg" />
                 {particleEffects && <ParticleBackground />}
@@ -301,32 +351,31 @@ const getPlanetColor = (type: string) => {
                     <div ref={gradientRef} className="pointer-events-none absolute inset-0 z-30 opacity-70" />
                 )}
 
-                {/* ── STICKY HEADER ─────────────────────────────────── */}
-                <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-xl supports-[backdrop-filter]:bg-black/20">
-                    <motion.div
-                        initial={{ y: -20, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        transition={{ duration: 0.5 }}
-                        className="flex h-16 items-center justify-between px-8"
-                    >
-                        <Button
-                            variant="ghost" size="sm"
-                            className="text-white/70 hover:bg-white/10 hover:text-white group font-body"
-                            onClick={() => router.back()}
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
-                            Back to Exoplanets
-                        </Button>
+                <div className="container mx-auto relative z-10 py-6 space-y-8 px-4 sm:px-8">
+                    {/* ── PAGE TITLE ───────────────────────────────────── */}
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div className="min-w-0">
+                            <h1 className="text-3xl font-bold tracking-tight text-white font-display break-words">
+                                {exoplanet?.pl_name ?? "—"}
+                            </h1>
+                            {exoplanet && (
+                                <div className="mt-1 flex flex-wrap items-center gap-2">
+                                    <p className="text-white/50 font-body text-sm">
+                                        {getStarType(exoplanet.st_teff as number)} Star System
+                                    </p>
+                                    <Badge className={`${getBadgeColor(getPlanetType(exoplanet.pl_rade as number))} text-xs px-2 py-0.5 font-body`}>
+                                        {getPlanetType(exoplanet.pl_rade as number)}
+                                    </Badge>
+                                </div>
+                            )}
+                        </div>
                         {exoplanet && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-shrink-0">
                                 <ShareDialog planetName={exoplanet.pl_name} planetUrl={getPlanetUrl()} planetData={exoplanet} />
                                 <ImportDataDialog onImportSuccess={handleImportData} />
                             </div>
                         )}
-                    </motion.div>
-                </header>
-
-                <div className="container mx-auto relative z-10 py-6 space-y-8 px-4 sm:px-8">
+                    </div>
 
                     {/* Loading skeleton */}
                     {isLoading ? (
@@ -366,21 +415,6 @@ const getPlanetColor = (type: string) => {
                                 >
                                     <Card className="glass text-white h-full">
                                         <CardContent className="pt-6 space-y-5">
-
-                                            {/* Name + type badge */}
-                                            <div className="flex flex-wrap items-start gap-3">
-                                                <div className="flex-1 min-w-0">
-                                                    <h1 className="text-4xl lg:text-5xl font-display text-gradient leading-tight break-words">
-                                                        {exoplanet.pl_name}
-                                                    </h1>
-                                                    <p className="text-white/50 font-body text-sm mt-1">
-                                                        {getStarType(exoplanet.st_teff as number)} Star System
-                                                    </p>
-                                                </div>
-                                                <Badge className={`${getBadgeColor(getPlanetType(exoplanet.pl_rade as number))} text-sm px-3 py-1 font-body mt-1 flex-shrink-0`}>
-                                                    {getPlanetType(exoplanet.pl_rade as number)}
-                                                </Badge>
-                                            </div>
 
                                             {/* Habitability + Terraformability KPI cards */}
                                             <div className="grid grid-cols-2 gap-3">
@@ -433,8 +467,6 @@ const getPlanetColor = (type: string) => {
                                                     </div>
                                                 )}
                                             </div>
-
-                                            <Separator className="bg-white/10" />
 
                                             {/* 4 stat chips */}
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -588,16 +620,16 @@ const getPlanetColor = (type: string) => {
                                                 <span className="text-xs font-display text-white/60 uppercase tracking-wide">Host Star</span>
                                                 <Badge className="bg-yellow-500/15 text-yellow-300 border-yellow-500/20 text-xs font-body">Data</Badge>
                                             </div>
-                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                            <div className="grid grid-cols-2 gap-3">
                                                 {[
                                                     { label: "Star Type", value: getStarType(exoplanet.st_teff as number) },
                                                     ...(exoplanet.st_teff ? [{ label: "Temperature", value: formatValue("st_teff", exoplanet.st_teff) }] : []),
                                                     ...(exoplanet.st_mass ? [{ label: "Mass", value: formatValue("st_mass", exoplanet.st_mass) }] : []),
                                                     ...(exoplanet.st_rad ? [{ label: "Radius", value: formatValue("st_rad", exoplanet.st_rad) }] : []),
                                                 ].map(({ label, value }) => (
-                                                    <div key={label} className="flex flex-col gap-0.5">
-                                                        <span className="text-white/40 text-xs font-body">{label}</span>
-                                                        <span className="text-white/80 text-sm font-body">{value}</span>
+                                                    <div key={label} className="rounded-lg border border-white/10 bg-white/5 p-3 text-center backdrop-blur-sm hover:bg-white/8 transition-colors">
+                                                        <span className="block text-white/45 text-xs font-body mb-1">{label}</span>
+                                                        <span className="block text-white font-medium font-display text-sm">{value}</span>
                                                     </div>
                                                 ))}
                                             </div>

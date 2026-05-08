@@ -87,62 +87,6 @@ export default function SignUp() {
             setIsLoading(false)
         }
     }
-
-    // const handleOAuthSignUp = async (provider: string) => {
-    //     setIsLoading(true)
-    //     try {
-    //         const result = await signIn(provider, {
-    //             callbackUrl: "/dashboard",
-    //             redirect: false, // Prevent immediate redirection
-    //         })
-    
-    //         if (result?.error) {
-    //             throw new Error("OAuth sign-in failed")
-    //         }
-    
-    //         // Fetch the current session
-    //         const session = await fetch("/api/auth/session").then((res) => res.json())
-    
-    //         console.log("Session Data:", session) // Debugging the session
-    
-    //         if (!session || !session.user) {
-    //             throw new Error("Session not found")
-    //         }
-    
-    //         // Send user data to the backend to store in the database
-    //         const response = await fetch("/api/register", {
-    //             method: "POST",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //             },
-    //             body: JSON.stringify({
-    //                 fullName: session?.user?.name,
-    //                 email: session?.user?.email,
-    //                 provider: provider.toUpperCase(),
-    //             }),
-    //         })            
-    
-    //         if (!response.ok) {
-    //             const data = await response.json()
-    //             throw new Error(data.error || "Failed to store user data")
-    //         }
-    
-    //         toast({
-    //             title: "Sign-up successful!",
-    //             description: "Your account has been created successfully.",
-    //         })
-    
-    //         router.push("/dashboard")
-    //     } catch (error) {
-    //         toast({
-    //             title: "Authentication failed",
-    //             description: error instanceof Error ? error.message : "An error occurred",
-    //             variant: "destructive",
-    //         })
-    //     } finally {
-    //         setIsLoading(false)
-    //     }
-    // }
     
     const handleOAuthSignUp = async (provider: string) => {
         setIsLoading(true)
