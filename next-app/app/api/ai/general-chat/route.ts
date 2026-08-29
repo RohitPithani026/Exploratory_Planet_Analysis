@@ -25,10 +25,11 @@ export async function POST(request: Request) {
     const groq = createGroq({ apiKey: process.env.GROQ_API_KEY })
 
     const result = streamText({
-        model: groq("llama-3.1-8b-instant"),
+        model: groq("openai/gpt-oss-20b"),
         system: SYSTEM_PROMPT,
         messages,
         maxOutputTokens: 512,
+        providerOptions: { groq: { reasoningEffort: "low" } },
     })
 
     return result.toTextStreamResponse()

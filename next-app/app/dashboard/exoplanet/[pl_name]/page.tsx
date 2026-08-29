@@ -524,12 +524,12 @@ const getPlanetColor = (type: string) => {
                                                 </div>
                                             ) : summary ? (
                                                 <div className="space-y-3">
-                                                    {summary.split(/\n\n+/).filter(p => p.trim()).slice(0, isNarrativeExpanded ? undefined : 2).map((para, i) => (
+                                                    {summary.split(/\n+/).filter(p => p.trim()).slice(0, isNarrativeExpanded ? undefined : 2).map((para, i) => (
                                                         <p key={i} className="text-white/80 leading-relaxed font-body text-sm">
                                                             {stripMarkdown(para.trim())}
                                                         </p>
                                                     ))}
-                                                    {summary.split(/\n\n+/).filter(p => p.trim()).length > 2 && (
+                                                    {summary.split(/\n+/).filter(p => p.trim()).length > 2 && (
                                                         <button
                                                             className="flex items-center gap-1 text-xs text-purple-400/70 hover:text-purple-300 font-body transition-colors"
                                                             onClick={() => setIsNarrativeExpanded(v => !v)}

@@ -11,25 +11,25 @@ interface UseCaseConfig {
 
 const USE_CASE_CONFIG: Record<AiUseCase, UseCaseConfig> = {
     habitability: {
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         systemPrompt:
             "You are an astrophysicist explaining exoplanet habitability to the general public. Use analogies and comparisons to Earth. Be engaging, accurate, and conversational.",
         maxTokens: 1024,
     },
     "image-prompt": {
-        model: "llama-3.1-8b-instant",
+        model: "openai/gpt-oss-20b",
         systemPrompt:
             "You are a visual artist specializing in scientifically accurate space art. Generate concise, vivid visual descriptions for generating images.",
         maxTokens: 512,
     },
     "fact-card": {
-        model: "llama-3.1-8b-instant",
+        model: "openai/gpt-oss-20b",
         systemPrompt:
             "You are a science communicator. Give a 2-3 sentence highlight of the most interesting thing about this exoplanet. Be punchy and specific.",
         maxTokens: 256,
     },
     comparison: {
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         systemPrompt:
             "You are an astrophysicist comparing exoplanets. Be specific about what each difference means for habitability and human exploration potential.",
         maxTokens: 1024,
@@ -57,6 +57,7 @@ export async function runAiUseCase(useCase: AiUseCase, prompt: string): Promise<
         system: config.systemPrompt,
         prompt,
         maxOutputTokens: config.maxTokens,
+        providerOptions: { groq: { reasoningEffort: "low" } },
     })
 
     return text

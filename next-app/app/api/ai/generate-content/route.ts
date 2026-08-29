@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         }
 
         if (contentType === "summary") {
-            const text = await runAiUseCase("habitability", buildSummaryPrompt(planetData))
+            const text = await runAiUseCase("habitability", buildNarrativePrompt(planetData))
             return NextResponse.json({ summary: text, success: true })
         }
 
@@ -81,6 +81,12 @@ export async function POST(request: Request) {
 function buildChartExplainPrompt(chartType: string, chartLabel: string, chartData: unknown): string {
     const dataStr = JSON.stringify(chartData).slice(0, 800)
     return `Explain the following ${chartLabel} chart to a curious non-scientist in 2–3 plain sentences. Focus on what the data means, not just what it shows. Chart type: ${chartType}. Data: ${dataStr}. Output only the explanation, no headings.`
+}
+
+function buildNarrativePrompt(p: PlanetData): string {
+    return `Write a vivid 2-3 sentence narrative about exoplanet ${p.pl_name} for a curious non-scientist — flowing prose, not a bulleted list or checklist. Paint a picture of what this world is like and what makes it noteworthy: its scale and environment, and its place in the search for habitable worlds. Weave the numbers into natural sentences rather than reciting them one by one.
+Data: radius ${p.pl_rade}× Earth, mass ${p.pl_bmasse}× Earth, temp ${p.pl_eqt}K, habitability ${p.habitability_score}%, terraformability ${p.terraformability_score}%, distance ${p.sy_dist} ly, discovered ${p.disc_year} by ${p.disc_facility}.
+Output only the narrative — no headings, no bullet points, no emoji.`
 }
 
 function buildSummaryPrompt(p: PlanetData): string {
